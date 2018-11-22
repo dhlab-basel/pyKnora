@@ -7,8 +7,72 @@ import urllib
 import pprint
 
 # TODO: recheck all the documentation of this file
+"""
+ Properties in knora-api:
 
+ - :hasValue
+ - :hasColor
+ - :hasComment
+ - :hasGeometry
+ - :hasLinkTo
+ - :isPartOf
+ - :isRegionOf
+ - :isAnnotationOf
+ - :seqnum
 
+ Classes in knora-api:
+
+ - :Resource
+ - :StillImageRepresentation
+ - :TextRepresentation
+ - :AudioRepresentation
+ - :DDDRepresentation
+ - :DocumentRepresentation
+ - :MovingImageRepresentation
+ - :Annotation -> :hasComment, :isAnnotationOf, :isAnnotationOfValue
+ - :LinkObj -> :hasComment, :hasLinkTo, :hasLinkToValue
+ - :LinkValue [reification node]
+ - :Region -> :hasColor, :isRegionOf, :hasGeometry, :isRegionOfValue, :hasComment
+
+ For lists:
+
+ - :ListNode -> :hasSubListNode, :listNodePosition, :listNodeName, :isRootNode, :hasRootNode, :attachedToProject
+
+ Values in knora-api:
+
+ - :Value
+ - :TextValue
+ - :ColorValue
+ - :DateValue
+ - :DecimalValue
+ - :GeomValue
+ - :GeonameValue
+ - :IntValue
+ - :BooleanValue
+ - :UriValue
+ - :IntervalValue
+ - :ListValue
+
+ GUI elements
+
+ - :Colorpicker
+ - :Date
+ - :Geometry
+ - :Geonames
+ - :Interval
+ - :List
+ - :Pulldown
+ - :Radio
+ - :Richtext
+ - :Searchbox
+ - :SimpleText
+ - :Slider
+ - :Spinbox
+ - :Textarea
+ - :Checkbox
+ - :Fileupload
+
+"""
 class KnoraError(Exception):
     """Handles errors happening in this file"""
     # TODO: Implement this

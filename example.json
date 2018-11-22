@@ -1,13 +1,17 @@
 {
+  "prefixes": {
+    "foaf": "http://xmlns.com/foaf/0.1/",
+    "dcterms": "http://purl.org/dc/terms/"
+  },
   "project": {
-    "shortcode": 4711,
+    "shortcode": 170,
     "shortname": "teimp",
     "longname": "Test Import",
     "description": {
       "en": "This is a project for testing the creation of ontologies and data",
       "de": "Dies ist ein Projekt, um die Erstellung von Ontologien und Datenimport zu testen"
     },
-    "keywords": ["test, "import""],
+    "keywords": ["test", "import"],
     "lists": [
       {
         "name": "signatur",
@@ -50,12 +54,12 @@
       }
     ],
     "ontology": {
-      "name": "teimponto",
+      "name": "teimp",
       "label": "Test import ontology",
       "resources": [
         {
           "name": "person",
-          "super": "knora-api:Resource",
+          "super": ["knora-api:Resource", "foaf:Person"],
           "labels": {
             "en": "Person",
             "de": "Person"
@@ -75,7 +79,7 @@
               },
               "gui_element": "salsah-gui:SimpleText",
               "gui_attributes": ["size=24", "maxlength=32"],
-              "cardinality": 1
+              "cardinality": "1"
             },
             {
               "name": "lastname",
@@ -87,17 +91,45 @@
               },
               "gui_element": "salsah-gui:SimpleText",
               "gui_attributes": ["size=24", "maxlength=64"],
-              "cardinality": 1
+              "cardinality": "1"
             },
             {
               "name": "member",
-              "super": "knoras-api:hasValue",
-
+              "super": "knora-api:hasLinkTo",
+              "object": "teimp:organization",
+              "labels": {
+                "en": "member of",
+                "de": "Mitglied von"
+              },
+              "gui_element": "salsah-gui:Searchbox",
+              "cardinality": "0-n"
             }
           ]
         },
         {
-          "name": "organization"
+          "name": "organization",
+          "super": ["knora-api:Resource", "foaf:Organization"],
+          "labels": {
+            "en": "Organization",
+            "de": "Organisation"
+          },
+          "comments": {
+            "en": "Denotes an organizational unit",
+            "de": "Eine Institution oder Trägerschaft"
+          },
+          "properties": [
+            {
+              "name": "name",
+              "super": ["knora-api:hasValue"],
+              "labels": {
+                "en": "Name",
+                "de": "Name"
+              },
+              "gui_element": "salsah-gui:SimpleText",
+              "gui_attributes": ["size=64", "maxlength=64"],
+              "cardinality": "1-n"
+            }
+          ]
         }
       ]
     }
