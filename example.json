@@ -1,0 +1,105 @@
+{
+  "project": {
+    "shortcode": 4711,
+    "shortname": "teimp",
+    "longname": "Test Import",
+    "description": {
+      "en": "This is a project for testing the creation of ontologies and data",
+      "de": "Dies ist ein Projekt, um die Erstellung von Ontologien und Datenimport zu testen"
+    },
+    "keywords": ["test, "import""],
+    "lists": [
+      {
+        "name": "signatur",
+        "nodes": [
+          {
+            "name": "business",
+            "labels": {
+              "en": "Commerce",
+              "de": "Handel"
+            },
+            "comments": {
+              "en": "no comment",
+              "de": "kein Kommentar"
+            },
+            "nodes": [
+              {
+                "name": "transport",
+                "labels": {
+                  "en": "Transportation",
+                  "de": "Transport"
+                }
+              },
+              {
+                "name": "finances",
+                "labels": {
+                  "en": "Finances",
+                  "de": "Finanzen"
+                }
+              }
+            ]
+          },
+          {
+            "name": "society",
+            "labels": {
+              "en": "Society",
+              "de": "Gesellschaft"
+            }
+          }
+        ]
+      }
+    ],
+    "ontology": {
+      "name": "teimponto",
+      "label": "Test import ontology",
+      "resources": [
+        {
+          "name": "person",
+          "super": "knora-api:Resource",
+          "labels": {
+            "en": "Person",
+            "de": "Person"
+          },
+          "comments": {
+            "en": "Represents a human being",
+            "de": "Repräsentiert eine Person/Menschen"
+          },
+          "properties": [
+            {
+              "name": "firstname",
+              "super": ["knora-api:hasValue", "foaf:givenName"],
+              "object": "knora-api:TextValue",
+              "labels": {
+                "en": "Firstname",
+                "de": "Vorname"
+              },
+              "gui_element": "salsah-gui:SimpleText",
+              "gui_attributes": ["size=24", "maxlength=32"],
+              "cardinality": 1
+            },
+            {
+              "name": "lastname",
+              "super": ["knora-api:hasValue", "foaf:familyName"],
+              "object": "knora-api:TextValue",
+              "labels": {
+                "en": "Lastname",
+                "de": "Nachname"
+              },
+              "gui_element": "salsah-gui:SimpleText",
+              "gui_attributes": ["size=24", "maxlength=64"],
+              "cardinality": 1
+            },
+            {
+              "name": "member",
+              "super": "knoras-api:hasValue",
+
+            }
+          ]
+        },
+        {
+          "name": "organization"
+        }
+      ]
+    }
+  }
+}
