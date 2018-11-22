@@ -14,7 +14,7 @@
     "keywords": ["test", "import"],
     "lists": [
       {
-        "name": "signatur",
+        "name": "orgtpye",
         "nodes": [
           {
             "name": "business",
@@ -121,12 +121,29 @@
             {
               "name": "name",
               "super": ["knora-api:hasValue"],
+              "object": "knora-api:TextValue",
               "labels": {
                 "en": "Name",
                 "de": "Name"
               },
               "gui_element": "salsah-gui:SimpleText",
               "gui_attributes": ["size=64", "maxlength=64"],
+              "cardinality": "1-n"
+            },
+            {
+              "name": "orgtype",
+              "super": ["knora-api:hasValue"],
+              "object": "knora-api:ListValue",
+              "labels": {
+                "en": "Organizationtype",
+                "de": "Organisationstyp"
+              },
+              "comments": {
+                "en": "Type of organization",
+                "de": "Art der Organisation"
+              },
+              "gui_element": "salsah-gui:Pulldown",
+              "gui_attributes": "hlist=orgtype",
               "cardinality": "1-n"
             }
           ]
