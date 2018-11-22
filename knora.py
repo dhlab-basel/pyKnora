@@ -79,7 +79,7 @@ class KnoraError(Exception):
     pass
 
 
-class Knora:
+class knora:
     """
     Class to interface with Knora API
     """
@@ -119,7 +119,7 @@ class Knora:
         else:
             return list(map(lambda a: a['id'], result['projects']))
 
-    def project_exists(self, proj_iri):
+    def project_exists(self, proj_iri: str):
         """Checks if a given project exists
 
         :return: Boolean
