@@ -119,7 +119,21 @@ class knora:
         else:
             return list(map(lambda a: a['id'], result['projects']))
 
-    def project_exists(self, proj_iri: str):
+    def get_project(self, project_iri: str):
+            """Returns a list of existing projects
+
+            :return: List of existing projects
+            """
+
+            url = self.server + '/admin/projects/' + urllib.parse.quote_plus(project_iri)
+            pprint.pprint(url)
+            req = requests.get(url, auth=(self.user, self.password))
+            self.on_api_error(req)
+            result = req.json()
+            return result['project']
+
+
+    def project_exists(self, proj_iri):
         """Checks if a given project exists
 
         :return: Boolean
@@ -608,69 +622,76 @@ nrows = -1 if args.nrows is None else args.nrows
 
 con = Knora(args.server, user, password)
 
-proj_iri = con.create_project(
-    shortcode="1011",
-    shortname="TdK",
-    longname="Tal der Könige",
-    description={"en": "Excavation in the Valley of the Kings", "de": "Ausgrabungen im Tal der Könige"},
-    keywords=("archaeology", "excavation")
-)
+p = con.get_existing_projects()
 
+pprint.pprint(p)
 
-node1 = con.create_list_node(proj_iri, {"en": "ROOT"}, {"en": "This is the root node"}, "RootNode")
-subnode1 = con.create_list_node(proj_iri, {"en": "SUB1"}, {"en": "This is the sub node 1"}, "SubNode1", node1)
-subnode2 = con.create_list_node(proj_iri, {"en": "SUB2"}, {"en": "This is the sub node 2"}, "SubNode2", node1)
-subnode3 = con.create_list_node(proj_iri, {"en": "SUB3"}, {"en": "This is the sub node 3"}, "SubNode3", node1)
+pp = con.get_project(p[1])
+pprint.pprint(pp)
 
-
-result = con.create_ontology(
-    onto_name="tdk",
-    project_iri=proj_iri,
-    label="Tal der Könige")
-onto_iri = result["onto_iri"]
-last_onto_date = result["last_onto_date"]
-
-labels = {
-    "en": "Study Materials / Findings",
-    "de": "SM / Fund"
-}
-result = con.create_res_class(
-    onto_iri=onto_iri,
-    onto_name="tdk",
-    last_onto_date=last_onto_date,
-    class_name="SMFund",
-    super_class="knora-api:Resource",
-    labels=labels
-)
-last_onto_date = result["last_onto_date"]
-
-result = con.create_property(
-    onto_iri=onto_iri,
-    onto_name="tdk",
-    last_onto_date=last_onto_date,
-    prop_name="smAreal",
-    super_props=["knora-api:hasValue"],
-    labels={"de": "Areal", "en": "area"},
-    gui_element="salsah-gui:SimpleText",
-    gui_attributes=["size=12", "maxlength=32"],
-    subject="tdk:SMFund",
-    object="knora-api:TextValue"
-)
-last_onto_date = result["last_onto_date"]
-prop_iri = result["prop_iri"]
-
-result=con.create_cardinality(
-            onto_iri=onto_iri,
-            onto_name="tdk",
-            last_onto_date=last_onto_date,
-            class_iri="tdk:SMFund",
-            prop_iri=prop_iri,
-            occurrence="0-1"
-)
-last_onto_date = result["last_onto_date"]
-
-last_onto_date = con.get_ontology_lastmoddate(onto_iri)
-con.delete_ontology(onto_iri, last_onto_date)
-
-
-
+# proj_iri = con.create_project(
+#     shortcode="1011",
+#     shortname="TdK",
+#     longname="Tal der Könige",
+#     description={"en": "Excavation in the Valley of the Kings", "de": "Ausgrabungen im Tal der Könige"},
+#     keywords=("archaeology", "excavation")
+# )
+#
+#
+# node1 = con.create_list_node(proj_iri, {"en": "ROOT"}, {"en": "This is the root node"}, "RootNode")
+# subnode1 = con.create_list_node(proj_iri, {"en": "SUB1"}, {"en": "This is the sub node 1"}, "SubNode1", node1)
+# subnode2 = con.create_list_node(proj_iri, {"en": "SUB2"}, {"en": "This is the sub node 2"}, "SubNode2", node1)
+# subnode3 = con.create_list_node(proj_iri, {"en": "SUB3"}, {"en": "This is the sub node 3"}, "SubNode3", node1)
+#
+#
+# result = con.create_ontology(
+#     onto_name="tdk",
+#     project_iri=proj_iri,
+#     label="Tal der Könige")
+# onto_iri = result["onto_iri"]
+# last_onto_date = result["last_onto_date"]
+#
+# labels = {
+#     "en": "Study Materials / Findings",
+#     "de": "SM / Fund"
+# }
+# result = con.create_res_class(
+#     onto_iri=onto_iri,
+#     onto_name="tdk",
+#     last_onto_date=last_onto_date,
+#     class_name="SMFund",
+#     super_class="knora-api:Resource",
+#     labels=labels
+# )
+# last_onto_date = result["last_onto_date"]
+#
+# result = con.create_property(
+#     onto_iri=onto_iri,
+#     onto_name="tdk",
+#     last_onto_date=last_onto_date,
+#     prop_name="smAreal",
+#     super_props=["knora-api:hasValue"],
+#     labels={"de": "Areal", "en": "area"},
+#     gui_element="salsah-gui:SimpleText",
+#     gui_attributes=["size=12", "maxlength=32"],
+#     subject="tdk:SMFund",
+#     object="knora-api:TextValue"
+# )
+# last_onto_date = result["last_onto_date"]
+# prop_iri = result["prop_iri"]
+#
+# result=con.create_cardinality(
+#             onto_iri=onto_iri,
+#             onto_name="tdk",
+#             last_onto_date=last_onto_date,
+#             class_iri="tdk:SMFund",
+#             prop_iri=prop_iri,
+#             occurrence="0-1"
+# )
+# last_onto_date = result["last_onto_date"]
+#
+# last_onto_date = con.get_ontology_lastmoddate(onto_iri)
+# con.delete_ontology(onto_iri, last_onto_date)
+#
+#
+#
