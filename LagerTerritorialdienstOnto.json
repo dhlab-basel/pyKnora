@@ -1,0 +1,364 @@
+{
+  "prefixes": {
+    "foaf": "http://xmlns.com/foaf/0.1/",
+    "dcterms": "http://purl.org/dc/terms/"
+  },
+  "project": {
+    "shortcode": "0808",
+    "shortname": "TerLag",
+    "longname": "Lager Territorialdienst 1942-1945",
+    "descriptions": {
+      "de": "**Lager Territorialdienst 1942-1945"
+    },
+    "keywords": ["**KEYWORD"],
+    "lists": [
+      {
+        "name": "kreis",
+        "labels": {
+          "de": "**Territorialreis"
+        },
+        "nodes": [
+          {
+            "name": "tk1",
+            "labels": {
+              "en": "Territorialkreis 1"
+            }
+          },
+          {
+            "name": "tk2",
+            "labels": {
+              "en": "Territorialkreis 2"
+            }
+          },
+          {
+            "name": "tk3",
+            "labels": {
+              "en": "Territorialkreis 3"
+            }
+          },
+          {
+            "name": "tk4",
+            "labels": {
+              "en": "Territorialkreis 4"
+            }
+          },
+          {
+            "name": "tk5",
+            "labels": {
+              "en": "Territorialkreis 5"
+            }
+          },
+          {
+            "name": "tk6",
+            "labels": {
+              "en": "Territorialkreis 6"
+            }
+          },
+          {
+            "name": "tk7",
+            "labels": {
+              "en": "Territorialkreis 7"
+            }
+          },
+          {
+            "name": "tk8",
+            "labels": {
+              "en": "Territorialkreis 8"
+            }
+          },
+          {
+            "name": "tk9a",
+            "labels": {
+              "en": "Territorialkreis 9a"
+            }
+          },
+          {
+            "name": "tk9b",
+            "labels": {
+              "en": "Territorialkreis 9b"
+            }
+          },
+          {
+            "name": "tk10",
+            "labels": {
+              "en": "Territorialkreis 10"
+            }
+          },
+          {
+            "name": "tk11",
+            "labels": {
+              "en": "Territorialkreis 11"
+            }
+          },
+          {
+            "name": "tk12",
+            "labels": {
+              "en": "Territorialkreis 12"
+            }
+          },
+          {
+            "name": "tkbasel",
+            "labels": {
+              "en": "Territorialkreis Basel"
+            }
+          },
+          {
+            "name": "tkgenf",
+            "labels": {
+              "en": "Territorialkreis Genf"
+            }
+          },
+          {
+            "name": "tksargans",
+            "labels": {
+              "en": "Territorialkreis Sargans"
+            }
+          },
+          {
+            "name": "tknd",
+            "labels": {
+              "en": "nicht definiert"
+            }
+          }
+        ]
+      },
+      {
+        "name": "lagerfunktion",
+        "labels": {
+          "de": "Lagerfunktion"
+        },
+        "nodes": [
+          {
+            "name": "auffanglager",
+            "labels": {
+              "de": "Auffanglager"
+            }
+          },
+          {
+            "name": "quarantaene",
+            "labels": {
+              "de": "Quaranänelager"
+            }
+          },
+          {
+            "name": "sammellager",
+            "labels": {
+              "de": "Sammellager"
+            }
+          },
+          {
+            "name": "desinfektionslager",
+            "labels": {
+              "de": "(Grenz-)Desinfektionslager"
+            }
+          },
+          {
+            "name": "militaerlager",
+            "labels": {
+              "de": "Militärquarantänelager"
+            }
+          },
+          {
+            "name": "heimschaffungslager",
+            "labels": {
+              "de": "Heimschaffungslager"
+            }
+          },
+          {
+            "name": "geasmtlager",
+            "labels": {
+              "de": "Lager gesamt"
+            }
+          },
+          {
+            "name": "anderelager",
+            "labels": {
+              "de": "Andere Lager"
+            }
+          },
+          {
+            "name": "gefaengnis",
+            "labels": {
+              "de": "Gefängnis"
+            }
+          },
+          {
+            "name": "spitallager",
+            "labels": {
+              "de": "Spital"
+            }
+          },
+          {
+            "name": "militaerspitallager",
+            "labels": {
+              "de": "Militärspital"
+            }
+          }
+        ]
+      },
+      {
+        "name": "zahlenart",
+        "labels": {
+          "de": "Zahlenart"
+        },
+        "nodes": [
+          {
+            "name": "zivil",
+             "labels": {
+               "de": "Zivilflüchtlinge"
+             }
+          },
+          {
+            "name": "militaer",
+            "labels": {
+              "de": "Militärflüchtlinge"
+            }
+          },
+          {
+            "name": "franz",
+            "labels": {
+              "de": "Französische Frauen und Kinder"
+            }
+          },
+          {
+            "name": "milpers",
+            "labels": {
+              "de": "Militärpersonal"
+            }
+          },
+          {
+            "name": "gesamt",
+            "labels": {
+              "de": "Flüchtlinge gesamt"
+            }
+          },
+          {
+            "name": "rueck",
+            "labels": {
+              "de": "Rückwanderer"
+            }
+          }
+        ]
+        }
+    ],
+    "ontology": {
+      "name": "terlag",
+      "label": "Territoriallager",
+      "resources": [
+        {
+          "name": "lager",
+          "super": "knora-api:Resource",
+          "labels": {
+            "de": "Lager"
+          },
+          "properties": [
+            {
+              "name": "lagername",
+              "super": ["knora-api:hasValue"],
+              "object": "knora-api:TextValue",
+              "subject": "terlag:lager",
+              "labels": {
+                "de": "Lagername"
+              },
+              "gui_element": "salsah-gui:SimpleText",
+              "gui_attributes": ["size=32", "maxlength=32"],
+              "cardinality": "1"
+            },
+            {
+              "name": "inKreis",
+              "super": ["knora-api:hasValue"],
+              "object": "knora-api:ListValue",
+              "subject": "terlag:lager",
+              "labels": {
+                "de": "in Kreis"
+              },
+              "gui_element": "salsah-gui:Pulldown",
+              "gui_attributes": ["hlist=kreis"],
+              "cardinality": "1"
+
+            },
+            {
+              "name": "inBetrieb",
+              "super": ["knora-api:hasValue"],
+              "object": "knora-api:DateValue",
+              "subject": "terlag:lager",
+              "labels": {
+                "de": "in Betrieb"
+              },
+              "gui_element": "salsah-gui:Date",
+              "cardinality": "0-n"
+            }
+          ]
+        },
+        {
+          "name": "belegung",
+          "super": "knora-api:Resource",
+          "labels": {
+            "de": "Belegungszahl"
+          },
+          "properties": [
+            {
+              "name": "asFunction",
+              "super": ["knora-api:hasValue"],
+              "object": "knora-api:ListValue",
+              "subject": "terlag:belegung",
+              "labels": {
+                "de": "in Funktion"
+              },
+              "gui_element": "salsah-gui:Pulldown",
+              "gui_attributes": ["hlist=lagerfunktion"],
+              "cardinality": "1"
+            },
+            {
+              "name": "zahlenart",
+              "super": ["knora-api:hasValue"],
+              "object": "knora-api:ListValue",
+              "subject": "terlag:belegung",
+              "labels": {
+                "de": "Zahlenart"
+              },
+              "gui_element": "salsah-gui:Pulldown",
+              "gui_attributes": ["hlist=zahlenart"],
+              "cardinality": "1"
+            },
+            {
+              "name": "periode",
+              "super": ["knora-api:hasValue"],
+              "object": "knora-api:DateValue",
+              "subject": "terlag:belegung",
+              "labels": {
+                "de": "Periode"
+              },
+              "gui_element": "salsah-gui:Date",
+              "cardinality": "1"
+            },
+            {
+              "name": "anzahl",
+              "super": ["knora-api:hasValue"],
+              "object": "knora-api:IntValue",
+              "subject": "terlag:belegung",
+              "labels": {
+                "de": "Anzahl"
+              },
+              "gui_element": "salsah-gui:SimpleText",
+              "gui_attributes": ["size=5", "maxlength=5"],
+              "cardinality": "1"
+            },
+            {
+              "name": "inLager",
+              "super": ["knora-api:hasLinkTo"],
+              "object": "terlag:lager",
+              "subject": "terlag:belegung",
+              "labels": {
+                "de": "in Lager"
+              },
+              "gui_element": "salsah-gui:Searchbox",
+              "gui_attributes": ["numprops=1"],
+              "cardinality": "1"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

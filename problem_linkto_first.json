@@ -1,0 +1,73 @@
+{
+  "prefixes": {
+    "foaf": "http://xmlns.com/foaf/0.1/",
+    "dcterms": "http://purl.org/dc/terms/"
+  },
+  "project": {
+    "shortcode": "0898",
+    "shortname": "probF",
+    "longname": "Problem Import",
+    "descriptions": {
+      "en": "problem"
+    },
+    "keywords": ["PROBLEM"],
+
+    "ontology": {
+      "name": "problemF",
+      "label": "Problem ontology",
+      "resources": [
+        {
+          "name": "A",
+          "super": "knora-api:Resource",
+          "labels": {
+            "en": "A"
+          },
+          "properties": [
+            {
+              "name": "aa",
+              "super": ["knora-api:hasValue"],
+              "object": "knora-api:TextValue",
+              "labels": {
+                "en": "aa"
+              },
+              "gui_element": "salsah-gui:SimpleText",
+              "gui_attributes": ["size=24", "maxlength=32"],
+              "cardinality": "1"
+            }
+          ]
+        },
+        {
+          "name": "B",
+          "super": "knora-api:Resource",
+          "labels": {
+            "en": "B"
+          },
+          "properties": [
+            {
+              "name": "toA",
+              "super": ["knora-api:hasLinkTo"],
+              "object": "problemF:A",
+              "labels": {
+                "en": "toA"
+              },
+              "gui_element": "salsah-gui:Searchbox",
+              "gui_attributes": ["numprops=1"],
+              "cardinality": "1"
+            },
+            {
+              "name": "bb",
+              "super": ["knora-api:hasValue"],
+              "object": "knora-api:TextValue",
+              "labels": {
+                "en": "bb"
+              },
+              "gui_element": "salsah-gui:SimpleText",
+              "gui_attributes": ["size=24", "maxlength=32"],
+              "cardinality": "1"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
