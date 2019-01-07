@@ -1,10 +1,10 @@
 from typing import List, Set, Dict, Tuple, Optional
-
+from urllib.parse import quote_plus
 import requests
 import json
-import argparse
 import urllib
 import pprint
+
 
 # TODO: recheck all the documentation of this file
 """
@@ -75,8 +75,9 @@ import pprint
 """
 class KnoraError(Exception):
     """Handles errors happening in this file"""
-    # TODO: Implement this
-    pass
+
+    def __init__(self, message):
+        self.message = message
 
 
 class knora:
@@ -84,7 +85,7 @@ class knora:
     Class to interface with Knora API
     """
 
-    def __init__(self, server, user, password):
+    def __init__(self, server: str, user: str, password: str, prefixes: Dict[str,str]):
         """
         Constructor requiring the server address, the user and password of KNORA
         :param server: Adress of the server, e.g http://data.dasch.swiss
@@ -94,6 +95,7 @@ class knora:
         self.server = server
         self.user = user
         self.password = password
+        self.prefixes = prefixes
 
     def on_api_error(self, res):
         """
@@ -101,6 +103,10 @@ class knora:
         :param res: The input to check, usually JSON format
         :return: Possible KnoraError that is being raised
         """
+
+        if (res.status_code != 200):
+            raise KnoraError("KNORA-ERROR: status code=" + str(res.status_code) + "\nMessage:" + res.text)
+
         if 'error' in res:
             raise KnoraError("KNORA-ERROR: API error: " + res.error)
 
@@ -119,21 +125,22 @@ class knora:
         else:
             return list(map(lambda a: a['id'], result['projects']))
 
-    def get_project(self, project_iri: str):
-            """Returns a list of existing projects
+    def get_project(self, shortcode: str) -> dict:
+        """Returns project data of given project
 
-            :return: List of existing projects
-            """
+        :param shortcode: Shortcode of object
+        :return:
+        """
 
-            url = self.server + '/admin/projects/' + urllib.parse.quote_plus(project_iri)
-            pprint.pprint(url)
-            req = requests.get(url, auth=(self.user, self.password))
-            self.on_api_error(req)
-            result = req.json()
-            return result['project']
+        url = self.server + '/admin/projects/' + quote_plus("http://rdfh.ch/projects/" + shortcode)
+        req = requests.get(url, auth=(self.user, self.password))
+        self.on_api_error(req)
 
+        result = req.json()
 
-    def project_exists(self, proj_iri):
+        return result["project"]
+
+    def project_exists(self, proj_iri: str):
         """Checks if a given project exists
 
         :return: Boolean
@@ -147,8 +154,8 @@ class knora:
             shortcode: str,
             shortname: str,
             longname: str,
-            description: Dict[str, str],
-            keywords: List[str],
+            descriptions: Optional[Dict[str, str]] = None,
+            keywords: Optional[List[str]] = None,
             logo: Optional[str] = None) -> str:
         """
         Create a new project
@@ -156,19 +163,19 @@ class knora:
         :param shortcode: Dedicated shortcode of project
         :param shortname: Short name of the project (e.g acronym)
         :param longname: Long name of project
-        :param description: Dict of the form {lang: descr, …} for the description of the project
+        :param descriptions: Dict of the form {lang: descr, …} for the description of the project [Default: None]
         :param keywords: List of keywords
         :param logo: Link to the project logo [default: None]
         :return: Project IRI
         """
 
-        description = list(map(lambda p: {"language": p[0], "value": p[1]}, description.items()))
+        descriptions = list(map(lambda p: {"language": p[0], "value": p[1]}, descriptions.items()))
 
         project = {
             "shortname": shortname,
             "shortcode": shortcode,
             "longname": longname,
-            "description": description,
+            "description": descriptions,
             "keywords": keywords,
             "logo": logo,
             "status": True,
@@ -189,6 +196,50 @@ class knora:
         print("==================================")
         return res["project"]["id"]
 
+    def update_project(
+            self,
+            shortcode: str,
+            shortname: Optional[str] = None,
+            longname: Optional[str] = None,
+            descriptions: Optional[Dict[str, str]] = None,
+            keywords: Optional[List[str]] = None,
+            logo: Optional[str] = None) -> str:
+        """
+
+        :param shortcode:
+        :param shortname:
+        :param longname:
+        :param descriptions:
+        :param keywords:
+        :param logo:
+        :return:
+        """
+
+        descriptions = list(map(lambda p: {"language": p[0], "value": p[1]}, descriptions.items()))
+
+        project = {
+            "shortcode": shortcode,
+            "longname": longname,
+            "description": descriptions,
+            "keywords": keywords,
+            "logo": logo,
+            "status": True,
+            "selfjoin": False
+        }
+
+        jsondata = json.dumps(project)
+        url = self.server + '/admin/projects/' + quote_plus("http://rdfh.ch/projects/" + shortcode)
+
+        req = requests.put(url,
+                           headers={'Content-Type': 'application/json; charset=UTF-8'},
+                           data=jsondata,
+                           auth=(self.user, self.password))
+        self.on_api_error(req)
+
+        res = req.json()
+        return res['project']['id']
+
+
     def get_existing_ontologies(self):
         """
 
@@ -203,6 +254,35 @@ class knora:
         else:
             names = list(map(lambda a: a['@id'], result['@graph']))
             return names
+
+    def get_project_ontologies(self, project_code: str) -> Optional[dict]:
+        """
+
+        :param project_code:
+        :return:
+        """
+
+        proj = quote_plus("http://rdfh.ch/projects/" + project_code)
+        req = requests.get(self.server + "/v2/ontologies/metadata/" + proj)
+        self.on_api_error(req)
+        result = req.json()
+        pprint.pprint(result)
+
+        if '@graph' in result:  # multiple ontologies
+            ontos = list(map(lambda a: {
+                'iri': a['@id'],
+                'label': a['rdfs:label'],
+                'moddate': a.get('knora-api:lastModificationDate')
+            }, result['@graph']))
+            return ontos
+        elif '@id' in result:  # single ontology
+            return [{
+                'iri': result['@id'],
+                'label': result['rdfs:label'],
+                'moddate': result.get('knora-api:lastModificationDate')
+            }]
+        else:
+            return None
 
     def ontology_exists(self, onto_iri: str):
         """
@@ -271,9 +351,6 @@ class knora:
         self.on_api_error(req)
 
         res = req.json()
-        print("---RESULT OF ONTOLOGY CREATION----")
-        pprint.pprint(res)
-        print("==================================")
         #TODO: return also ontology name
         return {"onto_iri": res['@id'], "last_onto_date": res['knora-api:lastModificationDate']}
 
@@ -412,10 +489,18 @@ class knora:
         #
         comments = list(map(lambda p: {"@language": p[0], "@value": p[1]}, comments.items()))
 
+        additional_context = {}
+        for sprop in super_props:
+            pp = sprop.split(':')
+            if pp[0] != "knora-api":
+                additional_context[pp[0]] = self.prefixes[pp[0]]
+
         #
         # using map and iterable to get the proper format
         #
         super_props = list(map(lambda x: {"@id": x}, super_props))
+        if len(super_props) == 1:
+            super_props = super_props[0]
 
         propdata = {
             "@id": onto_name + ":" + prop_name,
@@ -436,6 +521,7 @@ class knora:
             propdata["knora-api:objectType"] = {
                 "@id": object
             }
+
         if gui_attributes:
             propdata["salsah-gui:guiAttribute"] = gui_attributes
 
@@ -453,11 +539,10 @@ class knora:
                 "owl": "http://www.w3.org/2002/07/owl#",
                 "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
                 "xsd": "http://www.w3.org/2001/XMLSchema#",
-                "dcterms": "http://purl.org/dc/terms/",
                 onto_name: onto_iri + "#"
             }
         }
-
+        property["@context"].update(additional_context)
         jsondata = json.dumps(property, indent=3, separators=(',', ': '))
 
         print(jsondata)
@@ -533,9 +618,11 @@ class knora:
         jsondata = json.dumps(cardinality, indent=3, separators=(',', ': '))
 
         print(jsondata)
+        pprint.pprint(cardinality)
+        print("posting")
 
         req = requests.post(self.server + "/v2/ontologies/cardinalities",
-                            headers={'Content-Type': 'application/json; charset=UTF-8'},
+                            headers={'Content-Type': 'application/ld+json; charset=UTF-8'},
                             data=jsondata,
                             auth=(self.user, self.password))
         self.on_api_error(req)
@@ -551,7 +638,7 @@ class knora:
     def create_list_node(self,
                          project_iri: str,
                          labels: Dict[str, str],
-                         comments: Dict[str, str],
+                         comments: Optional[Dict[str, str]] = None,
                          name: Optional[str] = None,
                          parent_iri: Optional[str] = None) -> str:
         """
@@ -570,28 +657,33 @@ class knora:
         #
         labels = list(map(lambda p: {"language": p[0], "value": p[1]}, labels.items()))
 
-        #
-        # using map and iterable to get the proper format
-        #
-        comments = list(map(lambda p: {"language": p[0], "value": p[1]}, comments.items()))
 
         listnode = {
             "projectIri": project_iri,
             "labels": labels,
-            "comments": comments
         }
 
-        if name:
+        #
+        # using map and iterable to get the proper format
+        #
+        if comments is not None:
+            listnode["comments"] = list(map(lambda p: {"language": p[0], "value": p[1]}, comments.items()))
+        else:
+            listnode["comments"] = []
+
+        if name is not None:
             listnode["name"] = name
 
-        if parent_iri:
+        if parent_iri is not None:
             listnode["parentNodeIri"] = parent_iri
+            url = self.server + "/admin/lists/" + quote_plus(parent_iri)
+        else:
+            url = self.server + "/admin/lists"
 
         jsondata = json.dumps(listnode, indent=3, separators=(',', ': '))
 
-        print(jsondata)
 
-        req = requests.post(self.server + "/admin/lists",
+        req = requests.post(url,
                             headers={'Content-Type': 'application/json; charset=UTF-8'},
                             data=jsondata,
                             auth=(self.user, self.password))
@@ -599,12 +691,13 @@ class knora:
 
         res = req.json()
 
-        print("---RESULT OF LIST NODE CREATION----")
-        pprint.pprint(res)
-        print("=================================")
+        if parent_iri is not None:
+            return res['nodeinfo']['id']
+        else:
+            return res['list']['listinfo']['id']
 
-        return res["list"]["listinfo"]["id"]
 
+"""
 
 parser = argparse.ArgumentParser()
 parser.add_argument("server", help="URL of the Knora server")
@@ -622,76 +715,71 @@ nrows = -1 if args.nrows is None else args.nrows
 
 con = Knora(args.server, user, password)
 
-p = con.get_existing_projects()
+proj_iri = con.create_project(
+    shortcode="1011",
+    shortname="TdK",
+    longname="Tal der Könige",
+    description={"en": "Excavation in the Valley of the Kings", "de": "Ausgrabungen im Tal der Könige"},
+    keywords=("archaeology", "excavation")
+)
 
-pprint.pprint(p)
 
-pp = con.get_project(p[1])
-pprint.pprint(pp)
+node1 = con.create_list_node(proj_iri, {"en": "ROOT"}, {"en": "This is the root node"}, "RootNode")
+subnode1 = con.create_list_node(proj_iri, {"en": "SUB1"}, {"en": "This is the sub node 1"}, "SubNode1", node1)
+subnode2 = con.create_list_node(proj_iri, {"en": "SUB2"}, {"en": "This is the sub node 2"}, "SubNode2", node1)
+subnode3 = con.create_list_node(proj_iri, {"en": "SUB3"}, {"en": "This is the sub node 3"}, "SubNode3", node1)
 
-# proj_iri = con.create_project(
-#     shortcode="1011",
-#     shortname="TdK",
-#     longname="Tal der Könige",
-#     description={"en": "Excavation in the Valley of the Kings", "de": "Ausgrabungen im Tal der Könige"},
-#     keywords=("archaeology", "excavation")
-# )
-#
-#
-# node1 = con.create_list_node(proj_iri, {"en": "ROOT"}, {"en": "This is the root node"}, "RootNode")
-# subnode1 = con.create_list_node(proj_iri, {"en": "SUB1"}, {"en": "This is the sub node 1"}, "SubNode1", node1)
-# subnode2 = con.create_list_node(proj_iri, {"en": "SUB2"}, {"en": "This is the sub node 2"}, "SubNode2", node1)
-# subnode3 = con.create_list_node(proj_iri, {"en": "SUB3"}, {"en": "This is the sub node 3"}, "SubNode3", node1)
-#
-#
-# result = con.create_ontology(
-#     onto_name="tdk",
-#     project_iri=proj_iri,
-#     label="Tal der Könige")
-# onto_iri = result["onto_iri"]
-# last_onto_date = result["last_onto_date"]
-#
-# labels = {
-#     "en": "Study Materials / Findings",
-#     "de": "SM / Fund"
-# }
-# result = con.create_res_class(
-#     onto_iri=onto_iri,
-#     onto_name="tdk",
-#     last_onto_date=last_onto_date,
-#     class_name="SMFund",
-#     super_class="knora-api:Resource",
-#     labels=labels
-# )
-# last_onto_date = result["last_onto_date"]
-#
-# result = con.create_property(
-#     onto_iri=onto_iri,
-#     onto_name="tdk",
-#     last_onto_date=last_onto_date,
-#     prop_name="smAreal",
-#     super_props=["knora-api:hasValue"],
-#     labels={"de": "Areal", "en": "area"},
-#     gui_element="salsah-gui:SimpleText",
-#     gui_attributes=["size=12", "maxlength=32"],
-#     subject="tdk:SMFund",
-#     object="knora-api:TextValue"
-# )
-# last_onto_date = result["last_onto_date"]
-# prop_iri = result["prop_iri"]
-#
-# result=con.create_cardinality(
-#             onto_iri=onto_iri,
-#             onto_name="tdk",
-#             last_onto_date=last_onto_date,
-#             class_iri="tdk:SMFund",
-#             prop_iri=prop_iri,
-#             occurrence="0-1"
-# )
-# last_onto_date = result["last_onto_date"]
-#
-# last_onto_date = con.get_ontology_lastmoddate(onto_iri)
-# con.delete_ontology(onto_iri, last_onto_date)
-#
-#
-#
+
+result = con.create_ontology(
+    onto_name="tdk",
+    project_iri=proj_iri,
+    label="Tal der Könige")
+onto_iri = result["onto_iri"]
+last_onto_date = result["last_onto_date"]
+
+labels = {
+    "en": "Study Materials / Findings",
+    "de": "SM / Fund"
+}
+result = con.create_res_class(
+    onto_iri=onto_iri,
+    onto_name="tdk",
+    last_onto_date=last_onto_date,
+    class_name="SMFund",
+    super_class="knora-api:Resource",
+    labels=labels
+)
+last_onto_date = result["last_onto_date"]
+
+result = con.create_property(
+    onto_iri=onto_iri,
+    onto_name="tdk",
+    last_onto_date=last_onto_date,
+    prop_name="smAreal",
+    super_props=["knora-api:hasValue"],
+    labels={"de": "Areal", "en": "area"},
+    gui_element="salsah-gui:SimpleText",
+    gui_attributes=["size=12", "maxlength=32"],
+    subject="tdk:SMFund",
+    object="knora-api:TextValue"
+)
+last_onto_date = result["last_onto_date"]
+prop_iri = result["prop_iri"]
+
+result=con.create_cardinality(
+            onto_iri=onto_iri,
+            onto_name="tdk",
+            last_onto_date=last_onto_date,
+            class_iri="tdk:SMFund",
+            prop_iri=prop_iri,
+            occurrence="0-1"
+)
+last_onto_date = result["last_onto_date"]
+
+last_onto_date = con.get_ontology_lastmoddate(onto_iri)
+con.delete_ontology(onto_iri, last_onto_date)
+
+
+"""
+
+
