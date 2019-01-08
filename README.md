@@ -1,7 +1,24 @@
 # pyKnora
-This library consists of
+PyKnora is a toolbox to create data models (ontologies) and for mass upload of data
+into the Knora framework. 
+The famework consists of
 - ```knora.py``` Python modules for accessing Knora using the API (ontology creation, data import/export etc.)
 - ```create_ontology.py``` A program to create an ontology out of a simple JSON description
+
+## create_ontology.py
+This script reads a JSON file containing the data model (ontology) definition,
+connects to the Knora server and creates the data model.
+usage:
+
+```bash
+python3 create_ontology data_model_definition.json
+```
+It supports the foloowing options:
+
+- _"-s server" | "--server server"_: The URl of the Knora server [default: localhost:3333]
+- _"-u username" | "--user username"_: Username to log into Knora [default: root@example.com]
+- _"-p password" | "--password password"_: The password for login to the Knora server [default: test]
+- _"-v" | "--validate"_: If this flag is set, only the validation of the json is run
 
 ## JSON ontology definition format
 
@@ -213,24 +230,194 @@ The properties object has the following fields:
   - _ListValue_: Represents a node of a (possibly hierarchical) list
 - _labels_: Language dependent, human readable names
 - _gui_element_: The gui_element is stricly seen not part of the data. It gives the
-  generic GUI a hint about how the property should be presented to the used.
+  generic GUI a hint about how the property should be presented to the used. Each gui_element
+  may have associated gui_attributes which contain further hints.
   There are the following gui_elements available:
-  - :Colorpicker     -> ncolors=integer
-  - :Date
-  - :Geometry
-  - :Geonames
-  - :Interval
-  - :List            -> hlist(required)=<iri>
-  - :Pulldown        -> hlist(required)=<iri>
-  - :Radio           -> hlist(required)=<iri>
-  - :Richtext
-  - :Searchbox       -> numprops=integer
-  - :SimpleText      -> maxlength=integer, size=integer
-  - :Slider          -> max(required)=decimal, min(required)=decimal
-  - :Spinbox         -> max=decimal, min=decimal
-  - :Textarea        -> cols=integer, rows=integer, width=percent, wrap=string(soft|hard)
+  - _Colorpicker_: Let's You pick a color. It requires the attribute "ncolors=integer"
+  - _Date_: A date picker gui. No attributes
+  - _Geometry_: Not Yet Implemented.
+  - _Geonames_: Interfaces with geonames.org and allows to select a location
+  - _Interval_: Not Yet Implemented.
+  - _List_: A list of values. The Attribute "hlist=<list-iri>" is mandatory!
+  - _Pulldown_: Pulldown for list values. Works also for hierarchical lists. The Attribute "hlist=<list-iri>" is mandatory!
+  - _Radio_: A set of radio buttons. The Attribute "hlist=<list-iri>" is mandatory!
+  - _Richtext_: Provides a richtext editor.
+  - _Searchbox_: Allows to search and enter a resource that the given resource should link to. The Attribute "numprops=integer"
+     indicates how many properties of the found resources should be indicated. It's mandatory!
+  - _SimpleText_: A simple text entry box (one line only). The attributes "maxlength=integer" and "size=integer" are optional.
+  - _Slider_: Provides a slider to select a decimal value. The attributes "max=decimal" and "min=decimal" are mandatory!
+  - _Spinbox_: A text field with and "up"- and "down"-button for increment/decrement. The attributes "max=decimal" and "min=decimal" are optional.
+  - _Textarea_: Presents a multiline textentry box. Optional attributes are "cols=integer",  "rows=integer", "width=percent" and "wrap=soft|hard".
   - :Checkbox
   - :Fileupload
 
-- _gui_attributes_:
-- _cardinality_:
+- _gui_attributes_: See above
+- _cardinality_: The cardinality indicates how often a given property may occur. The possible values
+  are:
+  - "1": Exactly once (mandatory one value and only one)
+  - "0-1": The value may be omitted, but can occur only once
+  - "1-n": At least one value must be present. But multiple values may be present.
+  - "0-n": The value may be omitted, but may also occur multiple times.
+
+## A complete example
+
+```json
+{
+  "prefixes": {
+    "foaf": "http://xmlns.com/foaf/0.1/",
+    "dcterms": "http://purl.org/dc/terms/"
+  },
+  "project": {
+    "shortcode": "0170",
+    "shortname": "teimp",
+    "longname": "Test Import",
+    "descriptions": {
+      "en": "This is a project for testing the creation of ontologies and data",
+      "de": "Dies ist ein Projekt, um die Erstellung von Ontologien und Datenimport zu testen"
+    },
+    "keywords": ["test", "import"],
+    "lists": [
+      {
+        "name": "orgtpye",
+        "labels": {
+          "de": "Roganisationsart",
+          "en": "Organization Type"
+        },
+        "nodes": [
+          {
+            "name": "business",
+            "labels": {
+              "en": "Commerce",
+              "de": "Handel"
+            },
+            "comments": {
+              "en": "no comment",
+              "de": "kein Kommentar"
+            },
+            "nodes": [
+              {
+                "name": "transport",
+                "labels": {
+                  "en": "Transportation",
+                  "de": "Transport"
+                }
+              },
+              {
+                "name": "finances",
+                "labels": {
+                  "en": "Finances",
+                  "de": "Finanzen"
+                }
+              }
+            ]
+          },
+          {
+            "name": "society",
+            "labels": {
+              "en": "Society",
+              "de": "Gesellschaft"
+            }
+          }
+        ]
+      }
+    ],
+    "ontology": {
+      "name": "teimp",
+      "label": "Test import ontology",
+      "resources": [
+        {
+          "name": "person",
+          "super": "Resource",
+          "labels": {
+            "en": "Person",
+            "de": "Person"
+          },
+          "comments": {
+            "en": "Represents a human being",
+            "de": "Repräsentiert eine Person/Menschen"
+          },
+          "properties": [
+            {
+              "name": "firstname",
+              "super": ["hasValue", "foaf:givenName"],
+              "object": "TextValue",
+              "labels": {
+                "en": "Firstname",
+                "de": "Vorname"
+              },
+              "gui_element": "SimpleText",
+              "gui_attributes": ["size=24", "maxlength=32"],
+              "cardinality": "1"
+            },
+            {
+              "name": "lastname",
+              "super": ["hasValue", "foaf:familyName"],
+              "object": "TextValue",
+              "labels": {
+                "en": "Lastname",
+                "de": "Nachname"
+              },
+              "gui_element": "SimpleText",
+              "gui_attributes": ["size=24", "maxlength=64"],
+              "cardinality": "1"
+            },
+            {
+              "name": "member",
+              "super": ["hasLinkTo"],
+              "object": "teimp:organization",
+              "labels": {
+                "en": "member of",
+                "de": "Mitglied von"
+              },
+              "gui_element": "Searchbox",
+              "cardinality": "0-n"
+            }
+          ]
+        },
+        {
+          "name": "organization",
+          "super": "Resource",
+          "labels": {
+            "en": "Organization",
+            "de": "Organisation"
+          },
+          "comments": {
+            "en": "Denotes an organizational unit",
+            "de": "Eine Institution oder Trägerschaft"
+          },
+          "properties": [
+            {
+              "name": "name",
+              "super": ["hasValue"],
+              "object": "TextValue",
+              "labels": {
+                "en": "Name",
+                "de": "Name"
+              },
+              "gui_element": "SimpleText",
+              "gui_attributes": ["size=64", "maxlength=64"],
+              "cardinality": "1-n"
+            },
+            {
+              "name": "orgtype",
+              "super": ["hasValue"],
+              "object": "ListValue",
+              "labels": {
+                "en": "Organizationtype",
+                "de": "Organisationstyp"
+              },
+              "comments": {
+                "en": "Type of organization",
+                "de": "Art der Organisation"
+              },
+              "gui_element": "Pulldown",
+              "gui_attributes": ["hlist=orgtype"],
+              "cardinality": "1-n"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
+```
