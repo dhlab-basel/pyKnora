@@ -4,10 +4,10 @@
     "dcterms": "http://purl.org/dc/terms/"
   },
   "project": {
-    "shortcode": 170,
+    "shortcode": "0170",
     "shortname": "teimp",
     "longname": "Test Import",
-    "description": {
+    "descriptions": {
       "en": "This is a project for testing the creation of ontologies and data",
       "de": "Dies ist ein Projekt, um die Erstellung von Ontologien und Datenimport zu testen"
     },
@@ -15,6 +15,10 @@
     "lists": [
       {
         "name": "orgtpye",
+        "labels": {
+          "de": "Roganisationsart",
+          "en": "Organization Type"
+        },
         "nodes": [
           {
             "name": "business",
@@ -59,7 +63,7 @@
       "resources": [
         {
           "name": "person",
-          "super": ["knora-api:Resource", "foaf:Person"],
+          "super": "Resource",
           "labels": {
             "en": "Person",
             "de": "Person"
@@ -71,44 +75,44 @@
           "properties": [
             {
               "name": "firstname",
-              "super": ["knora-api:hasValue", "foaf:givenName"],
-              "object": "knora-api:TextValue",
+              "super": ["hasValue", "foaf:givenName"],
+              "object": "TextValue",
               "labels": {
                 "en": "Firstname",
                 "de": "Vorname"
               },
-              "gui_element": "salsah-gui:SimpleText",
+              "gui_element": "SimpleText",
               "gui_attributes": ["size=24", "maxlength=32"],
               "cardinality": "1"
             },
             {
               "name": "lastname",
-              "super": ["knora-api:hasValue", "foaf:familyName"],
-              "object": "knora-api:TextValue",
+              "super": ["hasValue", "foaf:familyName"],
+              "object": "TextValue",
               "labels": {
                 "en": "Lastname",
                 "de": "Nachname"
               },
-              "gui_element": "salsah-gui:SimpleText",
+              "gui_element": "SimpleText",
               "gui_attributes": ["size=24", "maxlength=64"],
               "cardinality": "1"
             },
             {
               "name": "member",
-              "super": "knora-api:hasLinkTo",
+              "super": ["hasLinkTo"],
               "object": "teimp:organization",
               "labels": {
                 "en": "member of",
                 "de": "Mitglied von"
               },
-              "gui_element": "salsah-gui:Searchbox",
+              "gui_element": "Searchbox",
               "cardinality": "0-n"
             }
           ]
         },
         {
           "name": "organization",
-          "super": ["knora-api:Resource", "foaf:Organization"],
+          "super": "Resource",
           "labels": {
             "en": "Organization",
             "de": "Organisation"
@@ -120,20 +124,20 @@
           "properties": [
             {
               "name": "name",
-              "super": ["knora-api:hasValue"],
-              "object": "knora-api:TextValue",
+              "super": ["hasValue"],
+              "object": "TextValue",
               "labels": {
                 "en": "Name",
                 "de": "Name"
               },
-              "gui_element": "salsah-gui:SimpleText",
+              "gui_element": "SimpleText",
               "gui_attributes": ["size=64", "maxlength=64"],
               "cardinality": "1-n"
             },
             {
               "name": "orgtype",
-              "super": ["knora-api:hasValue"],
-              "object": "knora-api:ListValue",
+              "super": ["hasValue"],
+              "object": "ListValue",
               "labels": {
                 "en": "Organizationtype",
                 "de": "Organisationstyp"
@@ -142,8 +146,8 @@
                 "en": "Type of organization",
                 "de": "Art der Organisation"
               },
-              "gui_element": "salsah-gui:Pulldown",
-              "gui_attributes": "hlist=orgtype",
+              "gui_element": "Pulldown",
+              "gui_attributes": ["hlist=orgtype"],
               "cardinality": "1-n"
             }
           ]

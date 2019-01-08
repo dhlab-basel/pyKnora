@@ -27,12 +27,19 @@ data = {
     }
 }
 
+
+
 class Lager:
-    def __init__(self, label, lagername: str, inKreis: str, inBetrieb: str):
+    def __init__(self, id: str, label, lagername: str, inKreis: str, inBetrieb: str):
         self.lagername = lagername
         self.inKreis = inKreis
         self.inBetries = inBetrieb
 
+    def toXml(self):
+        return
+
+class Belegung:
+    def __init__(self, id: str, label: str, anzahl: int, lager: str):
 
 parser = argparse.ArgumentParser()
 parser.add_argument("tabfile", help="path to tab separated data file")
@@ -47,13 +54,16 @@ with open(args.list) as f:
     lists = json.load(f)
 
 dates = []
+lager = []
 with open(args.tabfile, encoding="ISO-8859-1") as tsv:
     linecnt = 1
     for line in csv.reader(tsv, dialect="excel-tab"):
         if linecnt == 1:
             i = 9
             while i < len(line):
-                dates.append(line[i])
+                tmp = line[i].split('.')
+                datestr = "GREGORIAN:19" + tmp[2] + '-' + tmp[1] + '-' + tmp[0]
+                dates.append(datestr)
                 i = i + 1
             continue
         id = int(line[0])
@@ -78,10 +88,11 @@ with open(args.tabfile, encoding="ISO-8859-1") as tsv:
         inKreis = line[3]
         tmp = line[6].split('-')
         ttmp1 = tmp[0].split('.')
-        inBetrieb = "GREGORIAN:" + ttmp1[0] + ':' + ttmp1[1] + ':' + ttmp1[2]
+        inBetrieb = "GREGORIAN:" + ttmp1[2] + '-' + ttmp1[1] + '-' + ttmp1[0]
         if len(tmp) > 1:
             ttmp2 = tmp[1].split('.')
-            inBetrieb = inBetrieb + '-' + ttmp2[0] + ':' + ttmp2[1] + ':' + ttmp2[2]
+            inBetrieb = inBetrieb + ':' + ttmp2[2] + '-' + ttmp2[1] + '-' + ttmp2[0]
+        lager.append(Lager(label=label, lagername=lagername, inKreis=inKreis, inBetrieb=inBetrieb))
 
 root = etree.XML('''\
 <?xml version="1.0" encoding="UTF-8"?>

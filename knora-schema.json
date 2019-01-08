@@ -66,7 +66,25 @@
         },
         "super": {
           "type": "string",
-          "pattern": "^([\\w-]*):(\\w+)$"
+          "oneOf": [
+            {
+              "enum": [
+                "Resource",
+                "StillImageRepresentation",
+                "TextRepresentation",
+                "AudioRepresentation",
+                "DDDRepresentation",
+                "DocumentRepresentation",
+                "MovingImageRepresentation",
+                "Annotation",
+                "LinkObj",
+                "Region"
+              ]
+            },
+            {
+              "pattern": "^([\\w-]*):(\\w+)$"
+            }
+          ]
         },
         "labels": {
           "$ref": "#/definitions/label"
@@ -95,12 +113,48 @@
           "type": "array",
           "items": {
             "type": "string",
-            "pattern": "^([\\w-]+):(\\w+)$"
+            "oneOf": [
+              {
+                "enum": [
+                  "hasValue",
+                  "hasLinkTo",
+                  "hasColor",
+                  "hasComment",
+                  "hasGeometry",
+                  "isPartOf",
+                  "isRegionOf",
+                  "isAnnotationOf",
+                  "seqnum"
+                ]
+              },
+              {
+                "pattern": "^([\\w-]+):(\\w+)$"
+              }
+            ]
           }
         },
         "object": {
           "type": "string",
-          "pattern": "^([\\w-]+):(\\w+)$"
+          "oneOf": [
+            {
+              "enum": [
+                "TextValue",
+                "ColorValue",
+                "DateValue",
+                "DecimalValue",
+                "GeomValue",
+                "GeonameValue",
+                "IntValue",
+                "BooleanValue",
+                "UriValue",
+                "IntervalValue",
+                "ListValue"
+              ]
+            },
+            {
+              "pattern": "^([\\w-]+):(\\w+)$"
+            }
+          ]
         },
         "subject": {
           "type": "string",
@@ -116,7 +170,31 @@
         },
         "gui_element": {
           "type": "string",
-          "pattern": "^([\\w-]+):(\\w+)$"
+          "oneOf": [
+            {
+              "enum": [
+                "Colorpicker",
+                "Date",
+                "Geometry",
+                "Geonames",
+                "Interval",
+                "List",
+                "Pulldown",
+                "Radio",
+                "Richtext",
+                "Searchbox",
+                "SimpleText",
+                "Slider",
+                "Spinbox",
+                "Textarea",
+                "Checkbox",
+                "Fileupload"
+              ]
+            },
+            {
+              "pattern": "^([\\w-]+):(\\w+)$"
+            }
+          ]
         },
         "gui_attributes": {
           "type": "array",

@@ -41,34 +41,34 @@ import pprint
  Values in knora-api:
 
  - :Value
- - :TextValue
- - :ColorValue
- - :DateValue
- - :DecimalValue
- - :GeomValue
- - :GeonameValue
- - :IntValue
- - :BooleanValue
- - :UriValue
+ - :TextValue       -> :SimpleText, :TextArea
+ - :ColorValue      -> :Colorpicker
+ - :DateValue       -> :Date
+ - :DecimalValue    -> :SimpleText
+ - :GeomValue       -> :Geometry
+ - :GeonameValue    -> :Geonames
+ - :IntValue        -> :SimpleText, :Spinbox, :Slider
+ - :BooleanValue    -> :Checkbox
+ - :UriValue        -> :SimpleText
  - :IntervalValue
- - :ListValue
+ - :ListValue       -> :Pulldown
 
  GUI elements
 
- - :Colorpicker
+ - :Colorpicker     -> ncolors=integer
  - :Date
  - :Geometry
  - :Geonames
  - :Interval
- - :List
- - :Pulldown
- - :Radio
+ - :List            -> hlist(required)=<iri>
+ - :Pulldown        -> hlist(required)=<iri>
+ - :Radio           -> hlist(required)=<iri>
  - :Richtext
- - :Searchbox
- - :SimpleText
- - :Slider
- - :Spinbox
- - :Textarea
+ - :Searchbox       -> numprops=integer
+ - :SimpleText      -> maxlength=integer, size=integer
+ - :Slider          -> max(required)=decimal, min(required)=decimal
+ - :Spinbox         -> max=decimal, min=decimal
+ - :Textarea        -> cols=integer, rows=integer, width=percent, wrap=string(soft|hard)
  - :Checkbox
  - :Fileupload
 

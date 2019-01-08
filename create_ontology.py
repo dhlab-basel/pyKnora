@@ -11,6 +11,7 @@ parser.add_argument("ontofile", help="path to ontology file")
 parser.add_argument("-s", "--server", type=str, default="http://0.0.0.0:3333", help="URL of the Knora server")
 parser.add_argument("-u", "--user", default="root@example.com", help="Username for Knora")
 parser.add_argument("-p", "--password", default="test", help="The password for login")
+parser.add_argument("-v", "--validate", action='store_true')
 
 args = parser.parse_args()
 
@@ -27,9 +28,9 @@ def list_creator(con: knora, proj_iri: str, list_iri: str, parent_iri: str, node
         )
         if node.get('nodes') is not None:
             subnodelist = list_creator(con, proj_iri, list_iri, node_id, node['nodes'])
-            nodelist.append({'name': node["name"], 'id': node_id, 'nodes': subnodelist})
+            nodelist.append({node["name"]: {"id": node_id, 'nodes': subnodelist}})
         else:
-            nodelist.append({'name': node["name"], 'id': node_id, 'nodes': None})
+            nodelist.append({node["name"]: {"id": node_id}})
     return nodelist
 
 
@@ -43,6 +44,10 @@ with open(args.ontofile) as f:
 
 # validate the ontology definition in order to be sure that it is correct
 validate(ontology, schema)
+print("Ontology is syntactically correct and passed validation!")
+
+if validate:
+    exit(0)
 
 # create the knora connection object
 con = knora(args.server, args.user, args.password, ontology["prefixes"])
@@ -60,6 +65,9 @@ except KnoraError as err:
     )
     print("New project created: IRI: " + proj_iri)
 else:
+    print("Updating existing project!")
+    print("Old project data:")
+    pprint(project)
     proj_iri = con.update_project(
         shortcode=ontology["project"]["shortcode"],
         shortname=ontology["project"]["shortname"],
@@ -67,7 +75,10 @@ else:
         descriptions=ontology["project"]["descriptions"],
         keywords=ontology["project"]["keywords"]
     )
-    print("Existing project updated")
+    project = con.get_project(ontology["project"]["shortcode"])
+    print("New project data:")
+    pprint(project)
+
 
 # now let's create the lists
 lists = ontology["project"].get('lists')
@@ -81,7 +92,14 @@ if lists is not None:
             comments=rootnode.get('comments')
         )
         listnodes = list_creator(con, proj_iri, rootnode_iri, rootnode_iri, rootnode['nodes'])
-        listrootnodes[rootnode['name']] = rootnode_iri
+        listrootnodes[rootnode['name']] = {
+            "id": rootnode_iri,
+            "nodes": listnodes
+        }
+
+
+with open('lists.json', 'w', encoding="utf-8") as fp:
+    json.dump(listrootnodes, fp, indent=3, sort_keys=True)
 
 # now we start creating the ontology
 # first we assemble the ontology IRI
@@ -112,7 +130,7 @@ for resource in ontology["project"]["ontology"]["resources"]:
         onto_name=ontology["project"]["ontology"]["name"],
         last_onto_date=last_onto_date,
         class_name=resource["name"],
-        super_class=resource["super"],
+        super_class=resource["super"] if ':' in resource["super"] else "knora-api:" + resource["super"],
         labels=resource["labels"]
     )
     last_onto_date = result["last_onto_date"]
@@ -130,7 +148,7 @@ for resource in ontology["project"]["ontology"]["resources"]:
             for guiattr in guiattrs:
                 parts = guiattr.split("=")
                 if parts[0] == "hlist":
-                    new_guiattrs.append("hlist=<" + listrootnodes[parts[1]] + ">")
+                    new_guiattrs.append("hlist=<" + listrootnodes[parts[1]]["id"] + ">")
                 else:
                     new_guiattrs.append(guiattr)
             guiattrs = new_guiattrs
@@ -139,12 +157,12 @@ for resource in ontology["project"]["ontology"]["resources"]:
             onto_name=ontology["project"]["ontology"]["name"],
             last_onto_date=last_onto_date,
             prop_name=prop["name"],
-            super_props=prop["super"],
+            super_props=prop["super"] if ':' in prop["super"] else "knora-api:" + prop["super"],
             labels=prop["labels"],
-            gui_element=prop["gui_element"],
+            gui_element="knora-api:" + prop["gui_element"],
             gui_attributes=guiattrs,
             subject=prop.get("subject"),
-            object=prop.get("object"),
+            object="knora-api:" + prop.get("object"),
             comments=prop.get("comments")
         )
         last_onto_date = result["last_onto_date"]

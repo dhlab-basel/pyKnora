@@ -15,7 +15,7 @@
       {
         "name": "kreis",
         "labels": {
-          "de": "**Territorialreis"
+          "de": "Territorialkreis"
         },
         "nodes": [
           {
@@ -247,112 +247,112 @@
       "resources": [
         {
           "name": "lager",
-          "super": "knora-api:Resource",
+          "super": "Resource",
           "labels": {
             "de": "Lager"
           },
           "properties": [
             {
               "name": "lagername",
-              "super": ["knora-api:hasValue"],
-              "object": "knora-api:TextValue",
+              "super": ["hasValue"],
+              "object": "TextValue",
               "subject": "terlag:lager",
               "labels": {
                 "de": "Lagername"
               },
-              "gui_element": "salsah-gui:SimpleText",
+              "gui_element": "SimpleText",
               "gui_attributes": ["size=32", "maxlength=32"],
               "cardinality": "1"
             },
             {
               "name": "inKreis",
-              "super": ["knora-api:hasValue"],
-              "object": "knora-api:ListValue",
+              "super": ["hasValue"],
+              "object": "ListValue",
               "subject": "terlag:lager",
               "labels": {
                 "de": "in Kreis"
               },
-              "gui_element": "salsah-gui:Pulldown",
+              "gui_element": "Pulldown",
               "gui_attributes": ["hlist=kreis"],
               "cardinality": "1"
 
             },
             {
               "name": "inBetrieb",
-              "super": ["knora-api:hasValue"],
-              "object": "knora-api:DateValue",
+              "super": ["hasValue"],
+              "object": "DateValue",
               "subject": "terlag:lager",
               "labels": {
                 "de": "in Betrieb"
               },
-              "gui_element": "salsah-gui:Date",
+              "gui_element": "Date",
               "cardinality": "0-n"
             }
           ]
         },
         {
           "name": "belegung",
-          "super": "knora-api:Resource",
+          "super": "Resource",
           "labels": {
             "de": "Belegungszahl"
           },
           "properties": [
             {
               "name": "asFunction",
-              "super": ["knora-api:hasValue"],
-              "object": "knora-api:ListValue",
+              "super": ["hasValue"],
+              "object": "ListValue",
               "subject": "terlag:belegung",
               "labels": {
                 "de": "in Funktion"
               },
-              "gui_element": "salsah-gui:Pulldown",
+              "gui_element": "Pulldown",
               "gui_attributes": ["hlist=lagerfunktion"],
               "cardinality": "1"
             },
             {
               "name": "zahlenart",
-              "super": ["knora-api:hasValue"],
-              "object": "knora-api:ListValue",
+              "super": ["hasValue"],
+              "object": "ListValue",
               "subject": "terlag:belegung",
               "labels": {
                 "de": "Zahlenart"
               },
-              "gui_element": "salsah-gui:Pulldown",
+              "gui_element": "Pulldown",
               "gui_attributes": ["hlist=zahlenart"],
               "cardinality": "1"
             },
             {
               "name": "periode",
-              "super": ["knora-api:hasValue"],
-              "object": "knora-api:DateValue",
+              "super": ["hasValue"],
+              "object": "DateValue",
               "subject": "terlag:belegung",
               "labels": {
                 "de": "Periode"
               },
-              "gui_element": "salsah-gui:Date",
+              "gui_element": "Date",
               "cardinality": "1"
             },
             {
               "name": "anzahl",
-              "super": ["knora-api:hasValue"],
-              "object": "knora-api:IntValue",
+              "super": ["hasValue"],
+              "object": "IntValue",
               "subject": "terlag:belegung",
               "labels": {
                 "de": "Anzahl"
               },
-              "gui_element": "salsah-gui:SimpleText",
+              "gui_element": "SimpleText",
               "gui_attributes": ["size=5", "maxlength=5"],
               "cardinality": "1"
             },
             {
               "name": "inLager",
-              "super": ["knora-api:hasLinkTo"],
+              "super": ["hasLinkTo"],
               "object": "terlag:lager",
               "subject": "terlag:belegung",
               "labels": {
                 "de": "in Lager"
               },
-              "gui_element": "salsah-gui:Searchbox",
+              "gui_element": "Searchbox",
               "gui_attributes": ["numprops=1"],
               "cardinality": "1"
             }
