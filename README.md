@@ -126,16 +126,20 @@ A resource consists of the following definitions:
 - _super_: A resource class is always derived from an other resource. The
   most generic resource class Knora offers is _"Resource"_. The following
   parent predefined resources are provided by knora:
-  - _Resource_:
-  - _StillImageRepresentation_:
-  - _TextRepresentation_:
-  - _AudioRepresentation_:
-  - _DDDRepresentation_:
-  - _DocumentRepresentation_:
-  - _MovingImageRepresentation_:
-  - _Annotation_:
-  - _LinkObj_:
-  - _Region_:
+  - _Resource_: A generic "thing" that represents an item from the reral world
+  - _StillImageRepresentation_: An object that is connected to a still image
+  - _TextRepresentation_: An object that is connected to an (external) text (Not Yet Implemented)
+  - _AudioRepresentation_: An object representing audio data (Not Yet Implemented)
+  - _DDDRepresentation_: An object representing a 3d representation (Not Yet Implemented)
+  - _DocumentRepresentation_: An object representing a opaque document (e.g. a PDF)
+  - _MovingImageRepresentation_: An object representing a moving image (video, film)
+  - _Annotation_: A predefined annotation object. It has the following properties
+  defined:
+    - _hasComment_ (1-n), _isAnnotationOf_ (1)
+  - _LinkObj_: An resource class linking together several other, generic, resource classes. The class
+  has the following properties: _hasComment_ (1-n), _hasLinkTo_ (1-n)
+  - _Region_: Represents a simple region. The class has the following properties:
+  _hasColor_ (1), _isRegionOf_ (1) _hasGeometry_ (1), _isRegionOf_ (1), _hasComment_ (0-n)
   
   However, a resource my be derived from a resource class in another ontology within the same project or
   from another resource class in the same ontology. In this case the reference
@@ -170,30 +174,63 @@ The properties object has the following fields:
   properties defined in external ontologies. In this case the qualified name including
   the prefix has to be given.
   The following base properties are definied by Knora:
-  - _hasValue_:
-  - _hasLinkTo_:
-  - _hasColor_:
-  - _hasComment_:
-  - _hasGeometry_:
-  - _isPartOf_:
-  - _isRegionOf_:
-  - _isAnnotationOf_:
-  - _seqnum_:
+  - _hasValue_: This is the most generic base.
+  - _hasLinkTo_: This value represents a link to another resource. You have to indicate the
+    the "_object_" as a prefixed IRI that identifies the resource class this link points to.
+  - _hasColor_: Defines a color value (_ColorValue_)
+  - _hasComment_: Defines a "standard" comment
+  - _hasGeometry_: Defines a geometry value (a JSON describing a polygon, circle or rectangle), see _ColorValue_
+  - _isPartOf_: A special variant of _hasLinkTo_. It says that an instance of the given resource class
+    is an integral part of another resource class. E.g. a "page" is a prt of a "book".
+  - _isRegionOf_: A special variant of _hasLinkTo_. It means that the given resource class
+    is a "region" of another resource class. This is typically used to describe regions
+    of interest in images.
+  - _isAnnotationOf_: A special variant of _hasLinkTo_.  It denotes the given resource class
+    as an annotation to another resource class.
+  - _seqnum_: An integer that is used to define a sequence number in an ordered set of
+    instances.
   
 - _object_: The "object" defines the type of the value that the property will store.
   The following object types are allowed:
-  - _TextValue_:
-  - _ColorValue_:
-  - _DateValue_:
-  - _DecimalValue_:
-  - _GeomValue_:
-  - _GeonameValue_:
-  - _IntValue_:
-  - _BooleanValue_:
-  - _UriValue_:
-  - _IntervalValue_:
-  - _ListValue_: 
-- _labels_:
-- _gui_element_:
+  
+  - _TextValue_: Represents a text that may contain standoff markup
+  - _ColorValue_: A string in the form "#rrggbb" (standard web color format)
+  - _DateValue_: represents a date. It is a string having the format "_calendar":"start":"end"
+    - _calender_ is either _GREGORIAN_ or _JULIAN_
+    - _start_ has the form _yyyy_-_mm_-_dd_. If only the year is given, the precision
+      is to the year, of only the year and month are given, the precision is to a month.
+    - _end_ is optional if the date represents a clearely defined period or uncertainty.
+    
+    In total, a DateValue has the following form: "GREGORIAN:1925:1927-03-22"
+    which means antime in between 1925 and the 22nd March 1927.
+  - _DecimalValue_: a number with decimal point
+  - _GeomValue_: Represents a geometrical shape as JSON.
+  - _GeonameValue_: Represents a location ID in geonames.org
+  - _IntValue_: Represents an integer value
+  - _BooleanValue_: Represents a Boolean ("true" or "false)
+  - _UriValue_: : Represents an URI
+  - _IntervalValue_: Represents a time-interval
+  - _ListValue_: Represents a node of a (possibly hierarchical) list
+- _labels_: Language dependent, human readable names
+- _gui_element_: The gui_element is stricly seen not part of the data. It gives the
+  generic GUI a hint about how the property should be presented to the used.
+  There are the following gui_elements available:
+  - :Colorpicker     -> ncolors=integer
+  - :Date
+  - :Geometry
+  - :Geonames
+  - :Interval
+  - :List            -> hlist(required)=<iri>
+  - :Pulldown        -> hlist(required)=<iri>
+  - :Radio           -> hlist(required)=<iri>
+  - :Richtext
+  - :Searchbox       -> numprops=integer
+  - :SimpleText      -> maxlength=integer, size=integer
+  - :Slider          -> max(required)=decimal, min(required)=decimal
+  - :Spinbox         -> max=decimal, min=decimal
+  - :Textarea        -> cols=integer, rows=integer, width=percent, wrap=string(soft|hard)
+  - :Checkbox
+  - :Fileupload
+
 - _gui_attributes_:
 - _cardinality_:
