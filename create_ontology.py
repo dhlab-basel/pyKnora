@@ -3,7 +3,9 @@ from pprint import pprint
 import argparse
 import json
 from jsonschema import validate
+from rdflib import Graph
 from knora import KnoraError, knora
+
 
 # parse the arguments of the command line
 parser = argparse.ArgumentParser()
@@ -11,7 +13,8 @@ parser.add_argument("ontofile", help="path to ontology file")
 parser.add_argument("-s", "--server", type=str, default="http://0.0.0.0:3333", help="URL of the Knora server")
 parser.add_argument("-u", "--user", default="root@example.com", help="Username for Knora")
 parser.add_argument("-p", "--password", default="test", help="The password for login")
-parser.add_argument("-v", "--validate", action='store_true')
+parser.add_argument("-v", "--validate", action='store_true', help="Do only validation of JSON, no upload of the ontology")
+parser.add_argument("-l", "--lists", action='store_true', help="Only create the lists")
 
 args = parser.parse_args()
 
@@ -34,9 +37,57 @@ def list_creator(con: knora, proj_iri: str, list_iri: str, parent_iri: str, node
     return nodelist
 
 
+def create_template(con: knora, shortcode: str, shortname: str):
+    turtle = con.get_ontology_graph(shortcode, shortname)
+    g = Graph()
+    g.parse(format='n3', data=turtle)
+    sparql="""
+    SELECT ?res ?prop ?otype ?guiele ?attr ?card ?cardval
+    WHERE {
+        ?res a owl:Class .
+        ?res rdfs:subClassOf ?restriction .
+        ?restriction a owl:Restriction .
+        ?restriction owl:onProperty ?prop .
+        ?restriction ?card ?cardval .
+        ?prop a owl:ObjectProperty .
+        ?prop knora-api:objectType ?otype .
+        ?prop salsah-gui:guiElement ?guiele .
+        OPTIONAL { ?prop salsah-gui:guiAttribute ?attr } .
+        FILTER(?card = owl:cardinality || ?card = owl:maxCardinality || ?card = owl:minCardinality)
+    }
+    ORDER BY ?res
+    """
+    qres = g.query(sparql)
+
+    resources = []
+    resclass = ''
+    tmp = None
+    for row in qres:
+        nresclass = row.res.toPython()
+        if (resclass != nresclass):
+            if tmp is not None:
+                resources.append(gaga)
+            resclass = nresclass
+            gaga = {"res_id": resclass, "props": {}}
+        tmp["props"][row.prop.toPython()] = {
+            "otype": row.otype.toPython(),
+            "guiele": row.guiele.toPython(),
+            "attr": row.attr.toPython() if row.attr is not None else None,
+            "card": row.card.toPython(),
+            "cardval": row.cardval.toPython()
+       }
+    resources.append(tmp)
+
+    pprint(resources)
+
+
 # let's read the schema for the ontology definition
-with open('knora-schema.json') as s:
-    schema = json.load(s)
+if args.lists:
+    with open('knora-schema-lists.json') as s:
+        schema = json.load(s)
+else:
+    with open('knora-schema.json') as s:
+        schema = json.load(s)
 
 # read the ontology definition
 with open(args.ontofile) as f:
@@ -46,39 +97,45 @@ with open(args.ontofile) as f:
 validate(ontology, schema)
 print("Ontology is syntactically correct and passed validation!")
 
-if validate:
-    exit(0)
+#if validate:
+#    exit(0)
 
 # create the knora connection object
-con = knora(args.server, args.user, args.password, ontology["prefixes"])
+con = knora(args.server, args.user, args.password, ontology.get("prefixes"))
 
-# create or update the project
-try:
-    project = con.get_project(ontology["project"]["shortcode"])
-except KnoraError as err:
-    proj_iri = con.create_project(
-        shortcode=ontology["project"]["shortcode"],
-        shortname=ontology["project"]["shortname"],
-        longname=ontology["project"]["longname"],
-        descriptions=ontology["project"]["descriptions"],
-        keywords=ontology["project"]["keywords"]
-    )
-    print("New project created: IRI: " + proj_iri)
-else:
-    print("Updating existing project!")
-    print("Old project data:")
-    pprint(project)
-    proj_iri = con.update_project(
-        shortcode=ontology["project"]["shortcode"],
-        shortname=ontology["project"]["shortname"],
-        longname=ontology["project"]["longname"],
-        descriptions=ontology["project"]["descriptions"],
-        keywords=ontology["project"]["keywords"]
-    )
+# create_template(con, ontology["project"]["shortcode"], ontology["project"]["ontology"]["name"])
+# exit(0)
+
+if not args.lists:
+    # create or update the project
+    try:
+        project = con.get_project(ontology["project"]["shortcode"])
+    except KnoraError as err:
+        proj_iri = con.create_project(
+            shortcode=ontology["project"]["shortcode"],
+            shortname=ontology["project"]["shortname"],
+            longname=ontology["project"]["longname"],
+            descriptions=ontology["project"]["descriptions"],
+            keywords=ontology["project"]["keywords"]
+        )
+        print("New project created: IRI: " + proj_iri)
+    else:
+        print("Updating existing project!")
+        print("Old project data:")
+        pprint(project)
+        proj_iri = con.update_project(
+            shortcode=ontology["project"]["shortcode"],
+            shortname=ontology["project"]["shortname"],
+            longname=ontology["project"]["longname"],
+            descriptions=ontology["project"]["descriptions"],
+            keywords=ontology["project"]["keywords"]
+        )
     project = con.get_project(ontology["project"]["shortcode"])
     print("New project data:")
     pprint(project)
-
+else:
+    project = con.get_project(ontology["project"]["shortcode"])
+    proj_iri = project["id"]
 
 # now let's create the lists
 lists = ontology["project"].get('lists')
@@ -100,6 +157,10 @@ if lists is not None:
 
 with open('lists.json', 'w', encoding="utf-8") as fp:
     json.dump(listrootnodes, fp, indent=3, sort_keys=True)
+
+if args.lists:
+    print("The definitions of the node-id's can be found in \"lists.json\"!")
+    exit(0)
 
 # now we start creating the ontology
 # first we assemble the ontology IRI
