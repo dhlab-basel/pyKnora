@@ -19,6 +19,8 @@ It supports the foloowing options:
 - _"-u username" | "--user username"_: Username to log into Knora [default: root@example.com]
 - _"-p password" | "--password password"_: The password for login to the Knora server [default: test]
 - _"-v" | "--validate"_: If this flag is set, only the validation of the json is run
+- _"-l" | "--lists"_: Only create the lists using [simplyfied schema](#json-for-lists). Please note
+  that in this case the project __must__ exist.
 
 ## JSON ontology definition format
 
@@ -421,3 +423,16 @@ The properties object has the following fields:
   }
 }
 ```
+
+## JSON for lists
+
+The JSON schema for uploading hierarchical lists only is simplyfied:
+```json
+{
+  "project": {
+    "shortcode": "abcd",
+    "lists": []
+  }
+}
+```
+The definition of the lists is the same as in the full upload of an ontology!

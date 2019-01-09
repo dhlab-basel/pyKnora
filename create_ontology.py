@@ -213,17 +213,22 @@ for resource in ontology["project"]["ontology"]["resources"]:
                 else:
                     new_guiattrs.append(guiattr)
             guiattrs = new_guiattrs
+            super_props = list(map(lambda a: a if ':' in a else "knora-api:" + a, prop["super"]))
+            if prop.get("object") is not None:
+                object = prop["object"] if ':' in prop["object"] else "knora-api:" + prop["object"]
+            else:
+                object = None
         result = con.create_property(
             onto_iri=onto_iri,
             onto_name=ontology["project"]["ontology"]["name"],
             last_onto_date=last_onto_date,
             prop_name=prop["name"],
-            super_props=prop["super"] if ':' in prop["super"] else "knora-api:" + prop["super"],
+            super_props=super_props,
             labels=prop["labels"],
-            gui_element="knora-api:" + prop["gui_element"],
+            gui_element="salsah-gui:" + prop["gui_element"],
             gui_attributes=guiattrs,
             subject=prop.get("subject"),
-            object="knora-api:" + prop.get("object"),
+            object=object,
             comments=prop.get("comments")
         )
         last_onto_date = result["last_onto_date"]
