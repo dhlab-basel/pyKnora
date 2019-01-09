@@ -261,7 +261,7 @@ The properties object has the following fields:
   - "1-n": At least one value must be present. But multiple values may be present.
   - "0-n": The value may be omitted, but may also occur multiple times.
 
-## A complete example
+### A complete example for a full ontology
 
 ```json
 {
@@ -436,3 +436,56 @@ The JSON schema for uploading hierarchical lists only is simplyfied:
 }
 ```
 The definition of the lists is the same as in the full upload of an ontology!
+
+### A full example for creating lists only
+The following JSON definition assumes that there is a project with the shortcode _0808_.
+
+```json
+{
+  "project": {
+    "shortcode": "0808",
+    "lists": [
+      {
+        "name": "test1",
+        "labels": {
+          "de": "TEST1"
+        },
+        "nodes": [
+          {
+            "name": "A",
+            "labels": {
+              "de": "_A_"
+            }
+          },
+          {
+            "name": "B",
+            "labels": {
+              "de": "_B_"
+            },
+            "nodes": [
+              {
+                "name": "BA",
+                "labels": {
+                  "de": "_BA_"
+                }
+              },
+              {
+                "name": "BB",
+                "labels": {
+                  "de": "_BB_"
+                }
+              }
+            ]
+          },
+          {
+            "name": "C",
+            "labels": {
+              "de": "_C_"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
+```
