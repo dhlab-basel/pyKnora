@@ -85,7 +85,7 @@ class knora:
     Class to interface with Knora API
     """
 
-    def __init__(self, server: str, user: str, password: str, prefixes: Dict[str,str]):
+    def __init__(self, server: str, user: str, password: str, prefixes: Dict[str,str] = None):
         """
         Constructor requiring the server address, the user and password of KNORA
         :param server: Adress of the server, e.g http://data.dasch.swiss
@@ -372,6 +372,22 @@ class knora:
         pprint.pprint(res)
         print("==================================")
         return req
+
+    def get_ontology_graph(self,
+                           shortcode: str,
+                           name: str):
+        """
+        Returns the turtle definition of the ontology.
+        :param shortcode: Shortcode of the project
+        :param name: Name of the ontology
+        :return:
+        """
+        url = self.server + "/ontology/" + shortcode + "/" + name + "/v2"
+        turtle = requests.get(url,
+                              headers={"Accept": "text/turtle"},
+                              auth=(self.user, self.password))
+        self.on_api_error(turtle)
+        return turtle.text
 
     def create_res_class(self,
                          onto_iri: str,
