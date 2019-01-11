@@ -213,7 +213,6 @@
 
   "type": "object",
   "properties": {
-
     "prefixes": {
       "type": "object",
       "patternProperties": {

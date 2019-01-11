@@ -11,7 +11,7 @@ connects to the Knora server and creates the data model.
 usage:
 
 ```bash
-python3 create_ontology data_model_definition.json
+python3 create_ontology.py data_model_definition.json
 ```
 It supports the foloowing options:
 
@@ -60,7 +60,7 @@ This a project definition lokks like follows:
 ```json
 "project": {
    "shortcode": "0809",
-   "shortname": "tesex"
+   "shortname": "test"
    "longname": "Test Example",
    "descriptions": {
      "en": "This is a simple example project with no value.",

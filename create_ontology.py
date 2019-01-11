@@ -3,7 +3,6 @@ from pprint import pprint
 import argparse
 import json
 from jsonschema import validate
-from rdflib import Graph
 from knora import KnoraError, knora
 
 
@@ -37,50 +36,6 @@ def list_creator(con: knora, proj_iri: str, list_iri: str, parent_iri: str, node
     return nodelist
 
 
-def create_template(con: knora, shortcode: str, shortname: str):
-    turtle = con.get_ontology_graph(shortcode, shortname)
-    g = Graph()
-    g.parse(format='n3', data=turtle)
-    sparql="""
-    SELECT ?res ?prop ?otype ?guiele ?attr ?card ?cardval
-    WHERE {
-        ?res a owl:Class .
-        ?res rdfs:subClassOf ?restriction .
-        ?restriction a owl:Restriction .
-        ?restriction owl:onProperty ?prop .
-        ?restriction ?card ?cardval .
-        ?prop a owl:ObjectProperty .
-        ?prop knora-api:objectType ?otype .
-        ?prop salsah-gui:guiElement ?guiele .
-        OPTIONAL { ?prop salsah-gui:guiAttribute ?attr } .
-        FILTER(?card = owl:cardinality || ?card = owl:maxCardinality || ?card = owl:minCardinality)
-    }
-    ORDER BY ?res
-    """
-    qres = g.query(sparql)
-
-    resources = []
-    resclass = ''
-    tmp = None
-    for row in qres:
-        nresclass = row.res.toPython()
-        if (resclass != nresclass):
-            if tmp is not None:
-                resources.append(gaga)
-            resclass = nresclass
-            gaga = {"res_id": resclass, "props": {}}
-        tmp["props"][row.prop.toPython()] = {
-            "otype": row.otype.toPython(),
-            "guiele": row.guiele.toPython(),
-            "attr": row.attr.toPython() if row.attr is not None else None,
-            "card": row.card.toPython(),
-            "cardval": row.cardval.toPython()
-       }
-    resources.append(tmp)
-
-    pprint(resources)
-
-
 # let's read the schema for the ontology definition
 if args.lists:
     with open('knora-schema-lists.json') as s:
@@ -97,14 +52,13 @@ with open(args.ontofile) as f:
 validate(ontology, schema)
 print("Ontology is syntactically correct and passed validation!")
 
-#if validate:
-#    exit(0)
+if args.validate:
+    exit(0)
 
 # create the knora connection object
 con = knora(args.server, args.user, args.password, ontology.get("prefixes"))
 
-# create_template(con, ontology["project"]["shortcode"], ontology["project"]["ontology"]["name"])
-# exit(0)
+# bulk_templ = con.create_schema(ontology["project"]["shortcode"], ontology["project"]["ontology"]["name"])
 
 if not args.lists:
     # create or update the project
@@ -214,10 +168,10 @@ for resource in ontology["project"]["ontology"]["resources"]:
                     new_guiattrs.append(guiattr)
             guiattrs = new_guiattrs
             super_props = list(map(lambda a: a if ':' in a else "knora-api:" + a, prop["super"]))
-            if prop.get("object") is not None:
-                object = prop["object"] if ':' in prop["object"] else "knora-api:" + prop["object"]
-            else:
-                object = None
+        if prop.get("object") is not None:
+            object = prop["object"] if ':' in prop["object"] else "knora-api:" + prop["object"]
+        else:
+            object = None
         result = con.create_property(
             onto_iri=onto_iri,
             onto_name=ontology["project"]["ontology"]["name"],

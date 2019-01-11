@@ -1,9 +1,13 @@
 from typing import List, Set, Dict, Tuple, Optional
 from urllib.parse import quote_plus
+from rdflib import Graph
+from lxml import etree
 import requests
 import json
 import urllib
 import pprint
+import validators
+import re
 
 
 # TODO: recheck all the documentation of this file
@@ -191,9 +195,6 @@ class knora:
         self.on_api_error(req)
 
         res = req.json()
-        print("---RESULT OF PROJECT CREATION----")
-        pprint.pprint(res)
-        print("==================================")
         return res["project"]["id"]
 
     def update_project(
@@ -266,7 +267,6 @@ class knora:
         req = requests.get(self.server + "/v2/ontologies/metadata/" + proj)
         self.on_api_error(req)
         result = req.json()
-        pprint.pprint(result)
 
         if '@graph' in result:  # multiple ontologies
             ontos = list(map(lambda a: {
@@ -362,15 +362,11 @@ class knora:
         :return: 
         """"" #TODO: add return documentation
         url = self.server + "/v2/ontologies/" + urllib.parse.quote_plus(onto_iri)
-        pprint.pprint(url)
         req = requests.delete(url,
                               params={"lastModificationDate": last_onto_date},
                               auth=(self.user, self.password))
         self.on_api_error(req)
         res = req.json()
-        print("---RESULT OF ONTOLOGY DELETION----")
-        pprint.pprint(res)
-        print("==================================")
         return req
 
     def get_ontology_graph(self,
@@ -447,7 +443,6 @@ class knora:
 
         jsondata = json.dumps(res_class, indent=3, separators=(',', ': '))
 
-        print(jsondata)
         req = requests.post(self.server + "/v2/ontologies/classes",
                             headers={'Content-Type': 'application/json; charset=UTF-8'},
                             data=jsondata,
@@ -455,11 +450,6 @@ class knora:
         self.on_api_error(req)
 
         res = req.json()
-
-        print("---RESULT OF CLASS CREATION----")
-        pprint.pprint(res)
-        print("=================================")
-
         return {"class_iri": res['@graph'][0]['@id'], "last_onto_date": res['knora-api:lastModificationDate']}
 
     def create_property(
@@ -561,8 +551,6 @@ class knora:
         property["@context"].update(additional_context)
         jsondata = json.dumps(property, indent=3, separators=(',', ': '))
 
-        print(jsondata)
-
         req = requests.post(self.server + "/v2/ontologies/properties",
                             headers={'Content-Type': 'application/json; charset=UTF-8'},
                             data=jsondata,
@@ -570,11 +558,6 @@ class knora:
         self.on_api_error(req)
 
         res = req.json()
-
-        print("---RESULT OF PROPERTY CREATION----")
-        pprint.pprint(res)
-        print("=================================")
-
         return {"prop_iri": res['@graph'][0]['@id'], "last_onto_date": res['knora-api:lastModificationDate']}
 
     def create_cardinality(
@@ -633,10 +616,6 @@ class knora:
 
         jsondata = json.dumps(cardinality, indent=3, separators=(',', ': '))
 
-        print(jsondata)
-        pprint.pprint(cardinality)
-        print("posting")
-
         req = requests.post(self.server + "/v2/ontologies/cardinalities",
                             headers={'Content-Type': 'application/ld+json; charset=UTF-8'},
                             data=jsondata,
@@ -644,10 +623,6 @@ class knora:
         self.on_api_error(req)
 
         res = req.json()
-
-        print("---RESULT OF CARDINALIY CREATION----")
-        pprint.pprint(res)
-        print("=================================")
 
         return {"last_onto_date": res["knora-api:lastModificationDate"]}
 
@@ -712,90 +687,309 @@ class knora:
         else:
             return res['list']['listinfo']['id']
 
+    def get_lists(self, shortcode: str):
+        url = self.server + "/admin/lists?projectIri=" + quote_plus("http://rdfh.ch/projects/" + shortcode)
+        req = requests.get(url, auth=(self.user, self.password))
+        self.on_api_error(req)
+        return req.json()
 
-"""
+    def get_complete_list(self, list_iri: str):
+        url = self.server + "/admin/lists/" + quote_plus(list_iri)
+        req = requests.get(url, auth=(self.user, self.password))
+        self.on_api_error(req)
+        return req.json()
 
-parser = argparse.ArgumentParser()
-parser.add_argument("server", help="URL of the Knora server")
-parser.add_argument("-u", "--user", help="Username for Knora")
-parser.add_argument("-p", "--password", help="The password for login")
-parser.add_argument("-n", "--nrows", type=int, help="number of records to get, -1 to get all")
-parser.add_argument("-s", "--start", type=int, help="Start at record with given number")
-args = parser.parse_args()
+    def list_creator(self, children: List):
+        if len(children) == 0:
+            res = list(map(lambda a: {"name": a["name"], "id": a["id"]}, children))
+        else:
+            res = list(map(lambda a: {"name": a["name"], "id": a["id"], "nodes": self.list_creator(a["children"])}, children))
+        return res
 
-user = 'root@example.com' if args.user is None else args.user
-password = 'test' if args.password is None else args.password
-start = args.start
-nrows = -1 if args.nrows is None else args.nrows
+    def create_schema(self, shortcode: str, shortname: str):
+        """
+        This method extracts the ontology from the ontology information it gets from Knora. It
+        gets the ontology information as n3-data using the Knora API and concerts into a convenient
+        python dict that can be used for further processing. It is required by the bulk import ptrocessing
+        routines.
+
+        :param shortcode: Shortcode of the project
+        :param shortname: Short name of the ontolopgy
+        :return: Dict with a simple description of the ontology
+        """
+        turtle = self.get_ontology_graph(shortcode, shortname)
+        g = Graph()
+        g.parse(format='n3', data=turtle)
+        sparql="""
+        SELECT ?res ?prop ?superprop ?otype ?guiele ?attr ?card ?cardval
+        WHERE {
+            ?res a owl:Class .
+            ?res rdfs:subClassOf ?restriction .
+            ?restriction a owl:Restriction .
+            ?restriction owl:onProperty ?prop .
+            ?restriction ?card ?cardval .
+            ?prop a owl:ObjectProperty .
+            ?prop knora-api:objectType ?otype .
+            ?prop salsah-gui:guiElement ?guiele .
+            ?prop rdfs:subPropertyOf ?superprop .
+            OPTIONAL { ?prop salsah-gui:guiAttribute ?attr } .
+            FILTER(?card = owl:cardinality || ?card = owl:maxCardinality || ?card = owl:minCardinality)
+        }
+        ORDER BY ?res ?prop
+        """
+        qres = g.query(sparql)
+
+        resources = {}
+        resclass = ''
+        propname = ''
+        link_otypes = []
+        propcnt = 0
+        propindex= {}  # we have to keep the order of the properties as given in the ontology....
+        for row in qres:
+            nresclass = row.res.toPython()
+            nresclass = nresclass[nresclass.find('#') + 1:]
+            if resclass != nresclass:
+                resclass = nresclass
+                resources[resclass] = []
+                propcnt = 0
+            superprop = row.superprop.toPython()
+            superprop = superprop[superprop.find('#') + 1:]
+            if superprop == 'hasLinkToValue':  # we ignore this one....
+                continue
+            npropname = row.prop.toPython()
+            npropname = npropname[npropname.find('#') + 1:]
+            attr = row.attr.toPython() if row.attr is not None else None
+            if attr is not None:
+                attr = attr.split('=')
+            if propname == npropname:
+                if attr is not None:
+                    propcnt -= 1
+                    resources[resclass][propcnt]["attr"][attr[0]] = attr[1].strip('<>')
+                continue
+            else:
+                propname = npropname
+            objtype = row.otype.toPython()
+            objtype = objtype[objtype.find('#') + 1:]
+            card = row.card.toPython()
+            card = card[card.find('#') + 1:]
+            guiele = row.guiele.toPython()
+            guiele = guiele[guiele.find('#') + 1:]
+            resources[resclass].append({
+                "propname": propname,
+                "otype": objtype,
+                "superpro": superprop,
+                "guiele": guiele,
+                "attr": {attr[0]: attr[1].strip('<>')} if attr is not None else None,
+                "card": card,
+                "cardval": row.cardval.toPython()
+            })
+            if superprop == "hasLinkTo":
+                link_otypes.append(objtype)
+            propindex[propname] = propcnt
+            propcnt += 1
+        listdata = {}
+        lists = self.get_lists(shortcode)
+        lists = lists["lists"]
+        for list in lists:
+            tmp = self.get_complete_list(list["id"])
+            clist = tmp["list"]
+            listdata[clist["listinfo"]["name"]] = {
+                "id": clist["listinfo"]["id"],
+                "nodes": self.list_creator(clist["children"])
+            }
+
+        schema = {
+            "shortcode": shortcode,
+            "ontoname": shortname,
+            "lists": listdata,
+            "resources": resources,
+            "link_otypes": link_otypes
+        }
+        return schema
 
 
-con = Knora(args.server, user, password)
+class BulkImport:
+    def __init__(self, schema: Dict):
+        self.schema = schema
+        self.proj_prefix = 'p' + schema['shortcode'] + '-' + schema["ontoname"]
+        self.proj_iri = "http://api.knora.org/ontology/" + schema['shortcode'] + "/" + schema["ontoname"] + "/xml-import/v1#"
+        self.xml_prefixes = {
+            None: self.proj_iri,
+            "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+            self.proj_prefix: self.proj_iri,
+            "knoraXmlImport": "http://api.knora.org/ontology/knoraXmlImport/v1#"
+        }
+        self.root = etree.Element('{http://api.knora.org/ontology/knoraXmlImport/v1#}resources', nsmap=self.xml_prefixes)
 
-proj_iri = con.create_project(
-    shortcode="1011",
-    shortname="TdK",
-    longname="Tal der Könige",
-    description={"en": "Excavation in the Valley of the Kings", "de": "Ausgrabungen im Tal der Könige"},
-    keywords=("archaeology", "excavation")
-)
-
-
-node1 = con.create_list_node(proj_iri, {"en": "ROOT"}, {"en": "This is the root node"}, "RootNode")
-subnode1 = con.create_list_node(proj_iri, {"en": "SUB1"}, {"en": "This is the sub node 1"}, "SubNode1", node1)
-subnode2 = con.create_list_node(proj_iri, {"en": "SUB2"}, {"en": "This is the sub node 2"}, "SubNode2", node1)
-subnode3 = con.create_list_node(proj_iri, {"en": "SUB3"}, {"en": "This is the sub node 3"}, "SubNode3", node1)
-
-
-result = con.create_ontology(
-    onto_name="tdk",
-    project_iri=proj_iri,
-    label="Tal der Könige")
-onto_iri = result["onto_iri"]
-last_onto_date = result["last_onto_date"]
-
-labels = {
-    "en": "Study Materials / Findings",
-    "de": "SM / Fund"
-}
-result = con.create_res_class(
-    onto_iri=onto_iri,
-    onto_name="tdk",
-    last_onto_date=last_onto_date,
-    class_name="SMFund",
-    super_class="knora-api:Resource",
-    labels=labels
-)
-last_onto_date = result["last_onto_date"]
-
-result = con.create_property(
-    onto_iri=onto_iri,
-    onto_name="tdk",
-    last_onto_date=last_onto_date,
-    prop_name="smAreal",
-    super_props=["knora-api:hasValue"],
-    labels={"de": "Areal", "en": "area"},
-    gui_element="salsah-gui:SimpleText",
-    gui_attributes=["size=12", "maxlength=32"],
-    subject="tdk:SMFund",
-    object="knora-api:TextValue"
-)
-last_onto_date = result["last_onto_date"]
-prop_iri = result["prop_iri"]
-
-result=con.create_cardinality(
-            onto_iri=onto_iri,
-            onto_name="tdk",
-            last_onto_date=last_onto_date,
-            class_iri="tdk:SMFund",
-            prop_iri=prop_iri,
-            occurrence="0-1"
-)
-last_onto_date = result["last_onto_date"]
-
-last_onto_date = con.get_ontology_lastmoddate(onto_iri)
-con.delete_ontology(onto_iri, last_onto_date)
+    def new_xml_element(self, tag: str, options: Dict = None, value: str = None):
+        tagp = tag.split(':')
+        if len(tagp) > 1:
+            fulltag = '{' + self.xml_prefixes.get(tagp[0]) + '}' + tagp[1]
+        else:
+            fulltag = tagp[0]
+        if options is None:
+            ele = etree.Element(fulltag)
+        else:
+            ele = etree.Element(fulltag, options)
+        if value is not None:
+            ele.text = value
+        return ele
 
 
-"""
+    def write_xml(self, filename: str):
+        # print(etree.tostring(self.root, pretty_print=True, xml_declaration=True, encoding='utf-8'))
+        f = open(filename, "wb")
+        f.write(etree.tostring(self.root, pretty_print=True, xml_declaration=True, encoding='utf-8'))
+        f.close()
+
+    def add_resource(self, resclass: str, id: str, label: str, properties: Dict):
+
+        def find_list_node_id(nodename: str, nodes: List):
+            """
+            Finds a list node ID from the nodename in a (eventually hierarchical) list of nodes
+
+            :param nodename: Name of the node
+            :param nodes: List of nodes
+            :return: the id of the list node (an IRI)
+            """
+            for node in nodes:
+                if node["name"] == nodename:
+                    return node["id"]
+                if node.get("nodes") is not None:
+                    node_id = find_list_node_id(nodename, node["nodes"])
+                    if node_id is not None:
+                        return node_id
+            return None
+
+
+        def process_properties(propinfo: Dict, valuestr: any):
+            """
+            Processes a property in order to generate the approptiate XML for V1 bulk import.
+
+            :param pname: property name
+            :param valuestr: value of the property
+            :return: Tuple with xml options and processed value: (xmlopt, val)
+            """
+            switcher = {
+                'TextValue': {'knoraType': 'richtext_value'},
+                'ColorValue': {'knoraType': 'color_value'},
+                'DateValue': {'knoraType': 'date_value'},
+                'DecimalValue': {'knoraType': 'decimal_value'},
+                'GeomValue': {'knoraType': 'geom_value'},
+                'GeonameValue': {'knoraType': 'geoname_value'},
+                'IntValue': {'knoraType': 'int_value'},
+                'BooleanValue': {'knoraType': 'boolean_value'},
+                'UriValue': {'knoraType': 'uri_value'},
+                'IntervalValue': {'knoraType': 'interval_value'},
+                'ListValue': {'knoraType': 'hlist_value'},
+                'LinkValue': {'knoraType': 'link_value'}
+            }
+            for link_otype in self.schema["link_otypes"]:
+                switcher[link_otype] = {'knoraType': 'link_value'}
+            xmlopt = switcher.get(propinfo["otype"])
+            if xmlopt is None:
+                raise KnoraError("Did not find " + propinfo["otype"] + " in switcher!")
+            if xmlopt['knoraType'] == 'link_value':
+                xmlopt['target'] = str(valuestr)
+                if validators.url(str(valuestr)):
+                    xmlopt['linkType'] = 'iri'
+                else:
+                    xmlopt['linkType'] = 'ref'
+                value = None
+            elif propinfo["otype"] == 'ListValue':
+                if validators.url(str(valuestr)):
+                    # it's a full IRI identifying the node
+                    value = valuestr
+                else:
+                    # it's only a node name. First let's get the node list from the ontology schema
+                    list_id = propinfo["attr"]["hlist"]
+                    for listname in self.schema["lists"]:
+                        if self.schema["lists"][listname]["id"] == list_id:
+                            nodes = self.schema["lists"][listname]["nodes"]
+                    value = find_list_node_id(str(valuestr), nodes)
+            elif propinfo["otype"] == 'DateValue':
+                # processing and validating date format
+                res = re.match('(GREGORIAN:|JULIAN:)?(\d{4})?(-\d{1,2})?(-\d{1,2})?(:\d{4})?(-\d{1,2})?(-\d{1,2})?', str(valuestr))
+                if res is None:
+                    raise KnoraError("Invalid date format! " + str(valuestr))
+                dp = res.groups()
+                calendar = 'GREGORIAN:' if dp[0] is None else dp[0]
+                y1 = None if dp[1] is None else int(dp[1].strip('-: '))
+                m1 = None if dp[2] is None else int(dp[2].strip('-: '))
+                d1 = None if dp[3] is None else int(dp[3].strip('-: '))
+                y2 = None if dp[4] is None else int(dp[4].strip('-: '))
+                m2 = None if dp[5] is None else int(dp[5].strip('-: '))
+                d2 = None if dp[6] is None else int(dp[6].strip('-: '))
+                if y1 is None:
+                    raise KnoraError("Invalid date format! " + str(valuestr))
+                if y2 is not None:
+                    date1 = y1*10000;
+                    if m1 is not None:
+                        date1 += m1*100
+                    if d1 is not None:
+                        date1 += d1
+                    date2 = y2 * 10000;
+                    if m2 is not None:
+                        date2 += m2 * 100
+                    if d1 is not None:
+                        date2 += d2
+                    if date1 > date2:
+                        y1, y2 = y2, y1
+                        m1, m2 = m2, m1
+                        d1, d2 = d2, d1
+                value = calendar + str(y1)
+                if m1 is not None:
+                    value += f'-{m1:02d}'
+                if d1 is not None:
+                    value += f'-{d1:02d}'
+                if y2 is not None:
+                    value += f':{y2:04d}'
+                if m2 is not None:
+                    value += f'-{m2:02d}'
+                if d2 is not None:
+                    value += f'-{d2:02d}'
+            else:
+                value = str(valuestr)
+            return xmlopt, value
+
+        if self.schema["resources"].get(resclass) is None:
+            raise KnoraError('Resource class is not defined in ontlogy!')
+        resnode = self.new_xml_element(self.proj_prefix + ':' + resclass, {'id': str(id)})
+
+        labelnode = self.new_xml_element('knoraXmlImport:label')
+        labelnode.text = str(label)
+        resnode.append(labelnode)
+
+        for prop_info in self.schema["resources"][resclass]:
+            # first we check if the cardinality allows to add this property
+            if properties.get(prop_info["propname"]) is None:  # this property-value is missing
+                if prop_info["card"] == 'cardinality'\
+                        and prop_info["cardval"] == 1:
+                    raise KnoraError(resclass + " requires exactly one " + prop_info["propname"] + "-value: none supplied!")
+                if prop_info["card"] == 'minCardinality'\
+                        and prop_info["cardval"] == 1:
+                    raise KnoraError(resclass + " requires at least one " + prop_info["propname"] + "-value: none supplied!")
+                continue
+            if type(properties[prop_info["propname"]]) is list:
+                if len(properties[prop_info["propname"]]) > 1:
+                    if prop_info["card"] == 'maxCardinality' \
+                            and prop_info["cardval"] == 1:
+                        raise KnoraError(resclass + " allows maximal one " + prop_info["propname"] + "-value: several supplied!")
+                    if prop_info["card"] == 'cardinality'\
+                            and prop_info["cardval"] == 1:
+                        raise KnoraError(resclass + " requires exactly one " + prop_info["propname"] + "-value: several supplied!")
+                for p in properties[prop_info["propname"]]:
+                    xmlopt, value = process_properties(prop_info, p)
+                    pnode = self.new_xml_element(self.proj_prefix + ':' + prop_info["propname"], xmlopt, value)
+                    resnode.append(pnode)
+            else:
+                xmlopt, value = process_properties(prop_info, properties[prop_info["propname"]])
+                if xmlopt['knoraType'] == 'link_value':
+                    pnode = self.new_xml_element(self.proj_prefix + ':' + prop_info["propname"])
+                    pnode.append(self.new_xml_element(self.proj_prefix + ':' + prop_info["otype"], xmlopt, value))
+                else:
+                    pnode = self.new_xml_element(self.proj_prefix + ':' + prop_info["propname"], xmlopt, value)
+                resnode.append(pnode)
+        self.root.append(resnode)
 
 
