@@ -13,6 +13,8 @@ parser.add_argument("-p", "--password", default="test", help="The password for l
 parser.add_argument("-P", "--projectcode", help="Project short code")
 parser.add_argument("-O", "--ontoname", help="Shortname of ontology")
 parser.add_argument("-x", "--xml", default="data.xml", help="Name of bulk import XML-File")
+parser.add_argument("--start", default="1", help="Start with given line")
+parser.add_argument("--stop", default="all", help="End with given line ('all' reads all lines")
 
 args = parser.parse_args()
 
@@ -73,9 +75,6 @@ with open(args.tabfile) as tsv:
     for line in csv.reader(tsv, dialect="excel", delimiter=';', quotechar='"'):
         linecnt = linecnt + 1
         print("Input line #" + str(linecnt))
-        if linecnt > 20:  # TODO: REMOVE THIS AS SOON AS GRAPHDB HAS MORE HEEP...
-            bulk.write_xml(args.xml)
-            exit(0)
         if linecnt == 1:  # We process the first line differently
             i = 9
             while i < len(line):
@@ -86,6 +85,10 @@ with open(args.tabfile) as tsv:
                 datestr = "GREGORIAN:" + tmp[2] + '-' + tmp[1] + '-' + tmp[0]
                 dates.append(datestr)
                 i = i + 1
+            continue
+        if linecnt < int(args.start):
+            continue
+        if args.stop != "all" and linecnt > int(args.stop):
             continue
         lager_id = int(line[0])
         if lager_id != old_lager_id:  # we have a new lager, lets add it...
