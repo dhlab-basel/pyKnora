@@ -5,6 +5,10 @@ The famework consists of
 - ```knora.py``` Python modules for accessing Knora using the API (ontology creation, data import/export etc.)
 - ```create_ontology.py``` A program to create an ontology out of a simple JSON description
 
+## Content
+- [creating an ontology](#create-ontology.py)
+- [Bulk data import](#bulk-data-import)
+
 ## create_ontology.py
 This script reads a JSON file containing the data model (ontology) definition,
 connects to the Knora server and creates the data model.
@@ -488,6 +492,11 @@ The following JSON definition assumes that there is a project with the shortcode
     ]
   }
 }
+```
+
+## Bulk data import
+In order to make a bulk data import, a properly formatted XML file has to be created. The python module "knora.py" contains
+classes and methods to facilitate the creation of such a XML file.
 ```
 
 ## Requirements
