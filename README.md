@@ -497,7 +497,6 @@ The following JSON definition assumes that there is a project with the shortcode
 ## Bulk data import
 In order to make a bulk data import, a properly formatted XML file has to be created. The python module "knora.py" contains
 classes and methods to facilitate the creation of such a XML file.
-```
 
 ## Requirements
 
