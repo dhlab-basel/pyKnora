@@ -116,6 +116,18 @@ if args.lists:
     print("The definitions of the node-id's can be found in \"lists.json\"!")
     exit(0)
 
+# now we add the users if existing
+users = ontology["project"].get('users')
+if users is not None:
+    for user in users:
+        user_iri = con.create_user(username=user["username"],
+                                   email=user["email"],
+                                   givenName=user["givenName"],
+                                   familyName=user["familyName"],
+                                   password="password",
+                                   lang=user["lang"] if user.get("lang") is not None else "en")
+        con.add_user_to_project(user_iri, proj_iri)
+
 # now we start creating the ontology
 # first we assemble the ontology IRI
 onto_iri = args.server + "/ontology/" + ontology["project"]["shortcode"]\

@@ -86,7 +86,7 @@ class KnoraError(Exception):
 
 class knora:
     """
-    Class to interface with Knora API
+    This is the main class which holds all the methods for communication with the Knora backend.
     """
 
     def __init__(self, server: str, user: str, password: str, prefixes: Dict[str,str] = None):
@@ -133,7 +133,7 @@ class knora:
         """Returns project data of given project
 
         :param shortcode: Shortcode of object
-        :return:
+        :return: JSON containing the project information
         """
 
         url = self.server + '/admin/projects/' + quote_plus("http://rdfh.ch/projects/" + shortcode)
@@ -241,6 +241,55 @@ class knora:
         return res['project']['id']
 
 
+    def create_user(self,
+                    username: str,
+                    email: str,
+                    givenName: str,
+                    familyName: str,
+                    password: str,
+                    lang: str = "en"):
+        """
+        Create a new user
+
+        :param username: The username for login purposes (must be unique)
+        :param email: The email address of the user
+        :param givenName: The given name (surname, "Vorname", ...)
+        :param familyName: The family name
+        :param password: The password for the user
+        :param lang: language code, either "en", "de", "fr", "it" [default: "en"]
+        :return: The user ID as IRI
+        """
+
+        userinfo = {
+            "username": username,
+            "email": email,
+            "givenName": givenName,
+            "familyName": familyName,
+            "password": password,
+            "status": True,
+            "lang": lang,
+            "systemAdmin": False
+        }
+
+        jsondata = json.dumps(userinfo)
+        url = self.server + '/admin/users'
+
+        req = requests.post(url,
+                            headers={'Content-Type': 'application/json; charset=UTF-8'},
+                            data=jsondata,
+                            auth=(self.user, self.password))
+
+        self.on_api_error(req)
+        res = req.json()
+
+        return res['user']['id']
+
+    def add_user_to_project(self, user_iri: str, project_iri: str):
+        url = self.server + '/admin/users/projects/' + quote_plus(user_iri) + '/' + quote_plus(project_iri)
+        req = requests.post(url, auth=(self.user, self.password))
+        self.on_api_error(req)
+        return None
+
     def get_existing_ontologies(self):
         """
 
@@ -287,6 +336,7 @@ class knora:
     def ontology_exists(self, onto_iri: str):
         """
         Checks if an ontology exists
+
         :param onto_iri: The possible ontology iri
         :return: boolean
         """
@@ -356,7 +406,8 @@ class knora:
 
     def delete_ontology(self, onto_iri: str, last_onto_date = None):
         """
-        A method to delete an ontology from /v2/ontologies 
+        A method to delete an ontology from /v2/ontologies
+        
         :param onto_iri: The ontology to delete
         :param last_onto_date: the lastModificationDate of an ontology. None by default
         :return: 
@@ -374,6 +425,7 @@ class knora:
                            name: str):
         """
         Returns the turtle definition of the ontology.
+
         :param shortcode: Shortcode of the project
         :param name: Name of the ontology
         :return:
@@ -688,18 +740,36 @@ class knora:
             return res['list']['listinfo']['id']
 
     def get_lists(self, shortcode: str):
+        """
+        Get the lists belonging to a certain project identified by its shortcode
+        :param shortcode: Project shortcode
+
+        :return: JSON with the lists
+        """
         url = self.server + "/admin/lists?projectIri=" + quote_plus("http://rdfh.ch/projects/" + shortcode)
         req = requests.get(url, auth=(self.user, self.password))
         self.on_api_error(req)
         return req.json()
 
     def get_complete_list(self, list_iri: str):
+        """
+        Get all the data (nodes) of a specific list
+
+        :param list_iri: IRI of the list
+        :return: JSON containing the list info including all nodes
+        """
         url = self.server + "/admin/lists/" + quote_plus(list_iri)
         req = requests.get(url, auth=(self.user, self.password))
         self.on_api_error(req)
         return req.json()
 
     def list_creator(self, children: List):
+        """
+        internal Helper function
+
+        :param children:
+        :return:
+        """
         if len(children) == 0:
             res = list(map(lambda a: {"name": a["name"], "id": a["id"]}, children))
         else:
@@ -797,7 +867,6 @@ class knora:
                 "id": clist["listinfo"]["id"],
                 "nodes": self.list_creator(clist["children"])
             }
-
         schema = {
             "shortcode": shortcode,
             "ontoname": shortname,
@@ -855,7 +924,7 @@ class BulkImport:
             for node in nodes:
                 if node["name"] == nodename:
                     return node["id"]
-                if node.get("nodes") is not None:
+                if node.get("nodes") is not None and len(node.get("nodes")) > 0:
                     node_id = find_list_node_id(nodename, node["nodes"])
                     if node_id is not None:
                         return node_id
@@ -907,6 +976,9 @@ class BulkImport:
                         if self.schema["lists"][listname]["id"] == list_id:
                             nodes = self.schema["lists"][listname]["nodes"]
                     value = find_list_node_id(str(valuestr), nodes)
+                if value == 'http://rdfh.ch/lists/0808/X6bb-JerQyu5ULruCGEO0w':
+                    print("BANG!")
+                    exit(0)
             elif propinfo["otype"] == 'DateValue':
                 # processing and validating date format
                 res = re.match('(GREGORIAN:|JULIAN:)?(\d{4})?(-\d{1,2})?(-\d{1,2})?(:\d{4})?(-\d{1,2})?(-\d{1,2})?', str(valuestr))

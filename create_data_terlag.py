@@ -10,8 +10,8 @@ parser.add_argument("tabfile", help="path to tab separated data file")
 parser.add_argument("-s", "--server", type=str, default="http://0.0.0.0:3333", help="URL of the Knora server")
 parser.add_argument("-u", "--user", default="root@example.com", help="Username for Knora")
 parser.add_argument("-p", "--password", default="test", help="The password for login")
-parser.add_argument("-P", "--projectcode", help="Project short code")
-parser.add_argument("-O", "--ontoname", help="Shortname of ontology")
+parser.add_argument("-P", "--projectcode", required=True, help="Project short code")
+parser.add_argument("-O", "--ontoname", required=True, help="Shortname of ontology")
 parser.add_argument("-x", "--xml", default="data.xml", help="Name of bulk import XML-File")
 parser.add_argument("--start", default="1", help="Start with given line")
 parser.add_argument("--stop", default="all", help="End with given line ('all' reads all lines")
@@ -112,7 +112,10 @@ with open(args.tabfile) as tsv:
                     ttmp2[2] = '19' + ttmp2[2]
                 inBetrieb = inBetrieb + ':' + ttmp2[2] + '-' + ttmp2[1] + '-' + ttmp2[0]
             print(inBetrieb)
-            bulk.add_resource('lager', 'LAGER_' + str(lager_id), label, {"lagername": lagername, "inKreis": inKreis, "inBetrieb": inBetrieb})
+            bulk.add_resource('lager', 'LAGER_' + str(lager_id), label, {
+                "lagername": lagername,
+                "inKreis": inKreis,
+                "inBetrieb": inBetrieb})
 
         for i in range(9,len(line)):
             label = "Belegung " + 'Datum'

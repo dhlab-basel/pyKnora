@@ -35,6 +35,31 @@
       "additionalProperties": false
     },
 
+    "user": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "givenName": {
+          "type": "string"
+        },
+        "familyName": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "lang": {
+          "pattern": "^(en|de|fr|it)"
+        }
+      },
+      "required": ["username", "email", "givenName", "familyName", "password"]
+    },
+
     "node": {
       "type": "object",
       "properties": {
@@ -241,6 +266,13 @@
           "type": "array",
           "items": {
             "type": "string"
+          }
+        },
+
+        "users": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/user"
           }
         },
 

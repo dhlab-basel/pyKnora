@@ -241,6 +241,16 @@
         ]
         }
     ],
+    "users": [
+      {
+        "username": "clangenegger",
+        "email": "c.langenegger@unibas.ch",
+        "givenName": "Catrina",
+        "familyName": "Langenegger",
+        "password": "TerLag2019",
+        "lang": "de"
+      }
+    ],
     "ontology": {
       "name": "terlag",
       "label": "Territoriallager",
