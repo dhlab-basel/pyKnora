@@ -1498,6 +1498,75 @@
       "label": "Musikalisches Lexikon der Schweiz",
       "resources": [
         {
+          "name": "lexicon",
+          "super": "Resource",
+          "labels": {
+            "de": "Lexikon"
+          },
+          "properties": [
+            {
+              "name": "shortname",
+              "super": ["hasValue"],
+              "object": "TextValue",
+              "subject": "mls:lexicon",
+              "labels": {
+                "de": "Kürzel"
+              },
+              "gui_element": "SimpleText",
+              "gui_attributes": ["size=32", "maxlength=128"],
+              "cardinality": "1"
+            },
+            {
+              "name": "citationform",
+              "super": ["hasValue"],
+              "object": "TextValue",
+              "subject": "mls:lexicon",
+              "labels": {
+                "de": "Zitierform"
+              },
+              "gui_element": "SimpleText",
+              "gui_attributes": ["size=32", "maxlength=128"],
+              "cardinality": "1"
+            },
+            {
+              "name": "weblink",
+              "super": ["hasValue"],
+              "object": "UriValue",
+              "subject": "mls:lexicon",
+              "labels": {
+                "de": "Web-Link"
+              },
+              "gui_element": "SimpleText",
+              "gui_attributes": ["size=64", "maxlength=128"],
+              "cardinality": "0-1"
+            },
+            {
+              "name": "inLibrary",
+              "super": ["hasLinkTo"],
+              "object": "mls:library",
+              "subject": "mls:lexicon",
+              "labels": {
+                "de": "in Bibliothek"
+              },
+              "gui_element": "Searchbox",
+              "gui_attributes": ["numprops=1"],
+              "cardinality": "0-n"
+            },
+            {
+              "name": "lexcomment",
+              "super": ["hasValue"],
+              "object": "TextValue",
+              "subject": "mls:lexicon",
+              "labels": {
+                "de": "Kommentar"
+              },
+              "gui_element": "textarea",
+              "gui_attributes": ["width=99%", "nrows=2"],
+              "cardinality": "0-n"
+            }
+          ]
+        },
+        {
           "name": "lemma",
           "super": "Resource",
           "labels": {
@@ -1601,107 +1670,99 @@
               "cardinality": "0-1"
             },
             {
-              "name": "centuryinfo",
+              "name": "gnd",
               "super": ["hasValue"],
               "object": "TextValue",
               "subject": "mls:lemma",
               "labels": {
-                "de": "Jahrhunderangabe"
+                "de": "GND"
               },
               "gui_element": "SimpleText",
               "gui_attributes": ["size=32", "maxlength=32"],
               "cardinality": "0-1"
             },
-
-
-          ]
-        },
-        {
-          "name": "article",
-          "super": "Resource",
-          "labels": {
-            "de": "Artikel"
-          },
-          "properties": [
             {
-              "name": "articletype",
-              "super": ["hasValue"],
-              "object": "ListValue",
-              "subject": "mls:article",
-              "labels": {
-                "de": "Artikeltyp"
-              },
-              "gui_element": "Pulldown",
-              "gui_attributes": ["hlist=articletype"],
-              "cardinality": "1"
-            }
-          ]
-        },
-        {
-          "name": "lexicon",
-          "super": "Resource",
-          "labels": {
-            "de": "Lexikon"
-          },
-          "properties": [
-            {
-              "name": "shortname",
+              "name": "viaf",
               "super": ["hasValue"],
               "object": "TextValue",
-              "subject": "mls:lexicon",
+              "subject": "mls:lemma",
               "labels": {
-                "de": "Kürzel"
+                "de": "VIAF"
               },
               "gui_element": "SimpleText",
-              "gui_attributes": ["size=32", "maxlength=128"],
-              "cardinality": "1"
-            },
-            {
-              "name": "citationform",
-              "super": ["hasValue"],
-              "object": "TextValue",
-              "subject": "mls:lexicon",
-              "labels": {
-                "de": "Zitierform"
-              },
-              "gui_element": "SimpleText",
-              "gui_attributes": ["size=32", "maxlength=128"],
-              "cardinality": "1"
-            },
-            {
-              "name": "weblink",
-              "super": ["hasValue"],
-              "object": "UriValue",
-              "subject": "mls:lexicon",
-              "labels": {
-                "de": "Web-Link"
-              },
-              "gui_element": "SimpleText",
-              "gui_attributes": ["size=64", "maxlength=128"],
+              "gui_attributes": ["size=32", "maxlength=32"],
               "cardinality": "0-1"
             },
             {
-              "name": "inLibrary",
-              "super": ["hasLinkTo"],
-              "object": "mls:library",
-              "subject": "mls:lexicon",
+              "name": "firstname",
+              "super": ["hasValue", "foaf:givenName"],
+              "object": "TextValue",
+              "subject": "mls:lemma",
               "labels": {
-                "de": "in Bibliothek"
+                "de": "Vorname"
               },
-              "gui_element": "Searchbox",
-              "gui_attributes": ["numprops=1"],
+              "gui_element": "SimpleText",
+              "gui_attributes": ["size=32", "maxlength=32"],
+              "cardinality": "0-1"
+            },
+            {
+              "name": "variants",
+              "super": ["hasValue"],
+              "object": "TextValue",
+              "subject": "mls:lemma",
+              "labels": {
+                "de": "Varianten"
+              },
+              "gui_element": "SimpleText",
+              "gui_attributes": ["size=32", "maxlength=32"],
               "cardinality": "0-n"
             },
             {
-              "name": "lexcomment",
+              "name": "birthlocation",
               "super": ["hasValue"],
-              "object": "TextValue",
-              "subject": "mls:lexicon",
+              "object": "GeonameValue",
+              "subject": "mls:lemma",
               "labels": {
-                "de": "Kommentar"
+                "de": "Ort Geburt"
               },
-              "gui_element": "textarea",
-              "gui_attributes": ["width=99%", "nrows=2"],
+              "gui_element": "geonames",
+              "gui_attributes": [],
+              "cardinality": "0-1"
+            },
+            {
+              "name": "worklocation",
+              "super": ["hasValue"],
+              "object": "GeonameValue",
+              "subject": "mls:lemma",
+              "labels": {
+                "de": "Ort Tätigkeit"
+              },
+              "gui_element": "geonames",
+              "gui_attributes": [],
+              "cardinality": "0-1"
+            },
+            {
+              "name": "dyinglocation",
+              "super": ["hasValue"],
+              "object": "GeonameValue",
+              "subject": "mls:lemma",
+              "labels": {
+                "de": "Ort Tod"
+              },
+              "gui_element": "Geonames",
+              "gui_attributes": [],
+              "cardinality": "0-1"
+            },
+            {
+              "name": "sublemma",
+              "super": ["hasLinkTo"],
+              "object": "mls:lemma",
+              "subject": "mls:lemma",
+              "labels": {
+                "de": "Untergeordnetes Lemma"
+              },
+              "gui_element": "Searchbox",
+              "gui_attributes": [],
               "cardinality": "0-n"
             }
           ]
@@ -1795,6 +1856,231 @@
               },
               "gui_element": "textarea",
               "gui_attributes": ["width=99%", "nrows=2"],
+              "cardinality": "0-n"
+            }
+          ]
+        },
+        {
+          "name": "article",
+          "super": "Resource",
+          "labels": {
+            "de": "Artikel"
+          },
+          "properties": [
+            {
+              "name": "articletype",
+              "super": ["hasValue"],
+              "object": "ListValue",
+              "subject": "mls:article",
+              "labels": {
+                "de": "Artikeltyp"
+              },
+              "gui_element": "Pulldown",
+              "gui_attributes": ["hlist=articletype"],
+              "cardinality": "1"
+            },
+            {
+              "name":"hasLemma",
+              "super": ["hasLinkTo"],
+              "object": "mls:lemma",
+              "subject": "mls:article",
+              "labels": {
+                "de": "Lemma"
+              },
+              "gui_element": "Searchbox",
+              "gui_attributes": ["numprops=1"],
+              "cardinality": "1"
+            },
+            {
+              "name": "origspelling",
+              "super": ["hasValue"],
+              "object": "TextValue",
+              "subject": "mls:article",
+              "labels": {
+                "de": "Originalschreibung"
+              },
+              "gui_element": "SimpleText",
+              "gui_attributes": ["maxlength=128", "size=64"],
+              "cardinality": "0-1"
+            },
+            {
+              "name":"hasLexicon",
+              "super": ["hasLinkTo"],
+              "object": "mls:lexicon",
+              "subject": "mls:article",
+              "labels": {
+                "de": "in Lexikon"
+              },
+              "gui_element": "Searchbox",
+              "gui_attributes": ["numprops=1"],
+              "cardinality": "1"
+            },
+            {
+              "name": "pages",
+              "super": ["hasValue"],
+              "object": "TextValue",
+              "subject": "mls:article",
+              "labels": {
+                "de": "Seite"
+              },
+              "gui_element": "SimpleText",
+              "gui_attributes": ["maxlength=16", "size=16"],
+              "cardinality": "0-1"
+            },
+            {
+              "name": "articletext",
+              "super": ["hasValue"],
+              "object": "TextValue",
+              "subject": "mls:article",
+              "labels": {
+                "de": "Artikel"
+              },
+              "gui_element": "Textarea",
+              "gui_attributes": ["rows=5", "width=99%", "wrap=soft"],
+              "cardinality": "1"
+            },
+            {
+              "name": "numlines",
+              "super": ["hasValue"],
+              "object": "IntValue",
+              "subject": "mls:article",
+              "labels": {
+                "de": "Zeilen"
+              },
+              "gui_element": "SimpleText",
+              "gui_attributes": ["maxlength=6", "size=6"],
+              "cardinality": "0-1"
+            },
+            {
+              "name": "articlecomment",
+              "super": ["hasValue"],
+              "object": "TextValue",
+              "subject": "mls:library",
+              "labels": {
+                "de": "Kommentar"
+              },
+              "gui_element": "textarea",
+              "gui_attributes": ["width=99%", "nrows=2"],
+              "cardinality": "0-n"
+            },
+            {
+              "name": "state",
+              "super": ["hasValue"],
+              "object": "TextValue",
+              "subject": "mls:article",
+              "labels": {
+                "de": "Zustand"
+              },
+              "gui_element": "SimpleText",
+              "gui_attributes": ["maxlength=32", "size=32"],
+              "cardinality": "0-1"
+            },
+            {
+              "name": "internallex",
+              "super": ["hasValue"],
+              "object": "TextValue",
+              "subject": "mls:article",
+              "labels": {
+                "de": "Interne Lexicographische Information"
+              },
+              "gui_element": "SimpleText",
+              "gui_attributes": ["maxlength=128", "size=128"],
+              "cardinality": "0-1"
+            },
+            {
+              "name": "link",
+              "super": ["hasValue"],
+              "object": "UriValue",
+              "subject": "mls:article",
+              "labels": {
+                "de": "Link"
+              },
+              "gui_element": "SimpleText",
+              "gui_attributes": ["maxlength=128", "size=128"],
+              "cardinality": "0-1"
+            },
+            {
+              "name": "shortinfo",
+              "super": ["hasValue"],
+              "object": "TextValue",
+              "subject": "mls:library",
+              "labels": {
+                "de": "Kurzinformation"
+              },
+              "gui_element": "textarea",
+              "gui_attributes": ["width=99%", "nrows=2"],
+              "cardinality": "0-1"
+            },
+            {
+              "name": "theatrelexcode",
+              "super": ["hasValue"],
+              "object": "TextValue",
+              "subject": "mls:article",
+              "labels": {
+                "de": "Theaterlexikon Code"
+              },
+              "gui_element": "SimpleText",
+              "gui_attributes": ["maxlength=128", "size=32"],
+              "cardinality": "0-1"
+            },
+            {
+              "name": "ticinolexcode",
+              "super": ["hasValue"],
+              "object": "TextValue",
+              "subject": "mls:article",
+              "labels": {
+                "de": "Link Dizionario Ticinese"
+              },
+              "gui_element": "SimpleText",
+              "gui_attributes": ["maxlength=128", "size=32"],
+              "cardinality": "0-1"
+            },
+            {
+              "name": "fonotecacode",
+              "super": ["hasValue"],
+              "object": "TextValue",
+              "subject": "mls:article",
+              "labels": {
+                "de": "Fonoteca Code"
+              },
+              "gui_element": "SimpleText",
+              "gui_attributes": ["maxlength=128", "size=32"],
+              "cardinality": "0-1"
+            },
+            {
+              "name": "hlscode",
+              "super": ["hasValue"],
+              "object": "TextValue",
+              "subject": "mls:article",
+              "labels": {
+                "de": "HLS Code"
+              },
+              "gui_element": "SimpleText",
+              "gui_attributes": ["maxlength=128", "size=32"],
+              "cardinality": "0-1"
+            },
+            {
+              "name": "oemlcode",
+              "super": ["hasValue"],
+              "object": "TextValue",
+              "subject": "mls:article",
+              "labels": {
+                "de": "OEML Code"
+              },
+              "gui_element": "SimpleText",
+              "gui_attributes": ["maxlength=128", "size=32"],
+              "cardinality": "0-1"
+            },
+            {
+              "name": "subarticle",
+              "super": ["hasLinkTo"],
+              "object": "mls:article",
+              "subject": "mls:article",
+              "labels": {
+                "de": "Untergeordneter Artikel"
+              },
+              "gui_element": "Searchbox",
+              "gui_attributes": [],
               "cardinality": "0-n"
             }
           ]
