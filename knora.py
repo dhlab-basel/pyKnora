@@ -240,6 +240,18 @@ class knora:
         res = req.json()
         return res['project']['id']
 
+    def get_users(self):
+        """
+        Get a list of all users
+
+        :return:
+        """
+        url = self.server + '/admin/users'
+        req = requests.get(url, auth=(self.user, self.password))
+
+        self.on_api_error(req)
+        res = req.json()
+        return res['users']
 
     def create_user(self,
                     username: str,
