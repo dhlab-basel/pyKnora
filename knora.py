@@ -97,9 +97,30 @@ class knora:
         :param password: The password, e.g. test
         """
         self.server = server
-        self.user = user
-        self.password = password
         self.prefixes = prefixes
+
+        credentials = {
+            "identifier": user,
+            "password": password
+        }
+        jsondata = json.dumps(credentials)
+
+        req = requests.post(self.server + '/v2/authentication',
+                            headers={'Content-Type': 'application/json; charset=UTF-8'},
+                            data=jsondata)
+        self.on_api_error(req)
+
+        result = req.json()
+        self.token = result["token"]
+
+    def __del__(self):
+        req = requests.delete(self.server + '/v2/authentication',
+                              headers={'Authorization': 'Bearer ' + self.token})
+        result = req.json()
+
+        pprint.pprint(result)
+
+
 
     def on_api_error(self, res):
         """
@@ -114,20 +135,24 @@ class knora:
         if 'error' in res:
             raise KnoraError("KNORA-ERROR: API error: " + res.error)
 
-    def get_existing_projects(self):
+    def get_existing_projects(self, full: bool = False):
         """Returns a list of existing projects
 
         :return: List of existing projects
         """
 
-        req = requests.get(self.server + '/admin/projects', auth=(self.user, self.password))
+        req = requests.get(self.server + '/admin/projects',
+                           headers={'Authorization': 'Bearer ' + self.token})
         self.on_api_error(req)
         result = req.json()
 
-        if not 'projects' in result:
+        if  'projects' not in result:
             raise KnoraError("KNORA-ERROR:\n Request got no projects!")
         else:
-            return list(map(lambda a: a['id'], result['projects']))
+            if full:
+                return result['projects']
+            else:
+                return list(map(lambda a: a['id'], result['projects']))
 
     def get_project(self, shortcode: str) -> dict:
         """Returns project data of given project
@@ -137,7 +162,7 @@ class knora:
         """
 
         url = self.server + '/admin/projects/' + quote_plus("http://rdfh.ch/projects/" + shortcode)
-        req = requests.get(url, auth=(self.user, self.password))
+        req = requests.get(url, headers={'Authorization': 'Bearer ' + self.token})
         self.on_api_error(req)
 
         result = req.json()
@@ -189,9 +214,9 @@ class knora:
         jsondata = json.dumps(project)
 
         req = requests.post(self.server + "/admin/projects",
-                            headers={'Content-Type': 'application/json; charset=UTF-8'},
-                            data=jsondata,
-                            auth=(self.user, self.password))
+                            headers={'Content-Type': 'application/json; charset=UTF-8',
+                                     'Authorization': 'Bearer ' + self.token},
+                            data=jsondata)
         self.on_api_error(req)
 
         res = req.json()
@@ -232,9 +257,9 @@ class knora:
         url = self.server + '/admin/projects/' + quote_plus("http://rdfh.ch/projects/" + shortcode)
 
         req = requests.put(url,
-                           headers={'Content-Type': 'application/json; charset=UTF-8'},
-                           data=jsondata,
-                           auth=(self.user, self.password))
+                           headers={'Content-Type': 'application/json; charset=UTF-8',
+                                    'Authorization': 'Bearer ' + self.token},
+                           data=jsondata)
         self.on_api_error(req)
 
         res = req.json()
@@ -247,11 +272,24 @@ class knora:
         :return:
         """
         url = self.server + '/admin/users'
-        req = requests.get(url, auth=(self.user, self.password))
+        req = requests.get(url, headers={'Authorization': 'Bearer ' + self.token})
 
         self.on_api_error(req)
         res = req.json()
         return res['users']
+
+    def get_user(self, user_iri: str):
+        """
+        Get a list of all users
+
+        :return:
+        """
+        url = self.server + '/admin/users/' + quote_plus(user_iri)
+        req = requests.get(url, headers={'Authorization': 'Bearer ' + self.token})
+
+        self.on_api_error(req)
+        res = req.json()
+        return res['user']
 
     def create_user(self,
                     username: str,
@@ -287,9 +325,9 @@ class knora:
         url = self.server + '/admin/users'
 
         req = requests.post(url,
-                            headers={'Content-Type': 'application/json; charset=UTF-8'},
-                            data=jsondata,
-                            auth=(self.user, self.password))
+                            headers={'Content-Type': 'application/json; charset=UTF-8',
+                                     'Authorization': 'Bearer ' + self.token},
+                            data=jsondata)
 
         self.on_api_error(req)
         res = req.json()
@@ -298,7 +336,7 @@ class knora:
 
     def add_user_to_project(self, user_iri: str, project_iri: str):
         url = self.server + '/admin/users/projects/' + quote_plus(user_iri) + '/' + quote_plus(project_iri)
-        req = requests.post(url, auth=(self.user, self.password))
+        req = requests.post(url, headers={'Authorization': 'Bearer ' + self.token})
         self.on_api_error(req)
         return None
 
@@ -308,7 +346,8 @@ class knora:
         :return: Returns the metadata of all existing ontologies on v2/ontologies
         """
 
-        req = requests.get(self.server + '/v2/ontologies/metadata', auth=(self.user, self.password))
+        req = requests.get(self.server + '/v2/ontologies/metadata',
+                           headers={'Authorization': 'Bearer ' + self.token})
         result = req.json()
 
         if not '@graph' in result:
@@ -325,7 +364,8 @@ class knora:
         """
 
         proj = quote_plus("http://rdfh.ch/projects/" + project_code)
-        req = requests.get(self.server + "/v2/ontologies/metadata/" + proj)
+        req = requests.get(self.server + "/v2/ontologies/metadata/" + proj,
+                           headers={'Authorization': 'Bearer ' + self.token})
         self.on_api_error(req)
         result = req.json()
 
@@ -365,7 +405,8 @@ class knora:
         :return: The lastModificationDate if it exists. Else, this method returns a dict with (id, None). If the ontology does not exist, it return None.
         """
 
-        req = requests.get(self.server + '/v2/ontologies/metadata', auth=(self.user, self.password))
+        req = requests.get(self.server + '/v2/ontologies/metadata',
+                           headers={'Authorization': 'Bearer ' + self.token})
         result = req.json()
 
         all_ontos = {}
@@ -406,9 +447,9 @@ class knora:
         jsondata = json.dumps(ontology)
 
         req = requests.post(self.server + "/v2/ontologies",
-                            headers={'Content-Type': 'application/json; charset=UTF-8'},
-                            data=jsondata,
-                            auth=(self.user, self.password))
+                            headers={'Content-Type': 'application/json; charset=UTF-8',
+                                     'Authorization': 'Bearer ' + self.token},
+                            data=jsondata)
 
         self.on_api_error(req)
 
@@ -427,7 +468,7 @@ class knora:
         url = self.server + "/v2/ontologies/" + urllib.parse.quote_plus(onto_iri)
         req = requests.delete(url,
                               params={"lastModificationDate": last_onto_date},
-                              auth=(self.user, self.password))
+                              headers={'Authorization': 'Bearer ' + self.token})
         self.on_api_error(req)
         res = req.json()
         return req
@@ -444,8 +485,8 @@ class knora:
         """
         url = self.server + "/ontology/" + shortcode + "/" + name + "/v2"
         turtle = requests.get(url,
-                              headers={"Accept": "text/turtle"},
-                              auth=(self.user, self.password))
+                              headers={"Accept": "text/turtle",
+                                       'Authorization': 'Bearer ' + self.token})
         self.on_api_error(turtle)
         return turtle.text
 
@@ -508,9 +549,9 @@ class knora:
         jsondata = json.dumps(res_class, indent=3, separators=(',', ': '))
 
         req = requests.post(self.server + "/v2/ontologies/classes",
-                            headers={'Content-Type': 'application/json; charset=UTF-8'},
-                            data=jsondata,
-                            auth=(self.user, self.password))
+                            headers={'Content-Type': 'application/json; charset=UTF-8',
+                                     'Authorization': 'Bearer ' + self.token},
+                            data=jsondata)
         self.on_api_error(req)
 
         res = req.json()
@@ -616,9 +657,9 @@ class knora:
         jsondata = json.dumps(property, indent=3, separators=(',', ': '))
 
         req = requests.post(self.server + "/v2/ontologies/properties",
-                            headers={'Content-Type': 'application/json; charset=UTF-8'},
-                            data=jsondata,
-                            auth=(self.user, self.password))
+                            headers={'Content-Type': 'application/json; charset=UTF-8',
+                                     'Authorization': 'Bearer ' + self.token},
+                            data=jsondata)
         self.on_api_error(req)
 
         res = req.json()
@@ -681,9 +722,9 @@ class knora:
         jsondata = json.dumps(cardinality, indent=3, separators=(',', ': '))
 
         req = requests.post(self.server + "/v2/ontologies/cardinalities",
-                            headers={'Content-Type': 'application/ld+json; charset=UTF-8'},
-                            data=jsondata,
-                            auth=(self.user, self.password))
+                            headers={'Content-Type': 'application/ld+json; charset=UTF-8',
+                                     'Authorization': 'Bearer ' + self.token},
+                            data=jsondata)
         self.on_api_error(req)
 
         res = req.json()
@@ -739,9 +780,9 @@ class knora:
 
 
         req = requests.post(url,
-                            headers={'Content-Type': 'application/json; charset=UTF-8'},
-                            data=jsondata,
-                            auth=(self.user, self.password))
+                            headers={'Content-Type': 'application/json; charset=UTF-8',
+                                     'Authorization': 'Bearer ' + self.token},
+                            data=jsondata)
         self.on_api_error(req)
 
         res = req.json()
@@ -759,7 +800,7 @@ class knora:
         :return: JSON with the lists
         """
         url = self.server + "/admin/lists?projectIri=" + quote_plus("http://rdfh.ch/projects/" + shortcode)
-        req = requests.get(url, auth=(self.user, self.password))
+        req = requests.get(url, headers={'Authorization': 'Bearer ' + self.token})
         self.on_api_error(req)
         return req.json()
 
@@ -771,7 +812,7 @@ class knora:
         :return: JSON containing the list info including all nodes
         """
         url = self.server + "/admin/lists/" + quote_plus(list_iri)
-        req = requests.get(url, auth=(self.user, self.password))
+        req = requests.get(url, headers={'Authorization': 'Bearer ' + self.token})
         self.on_api_error(req)
         return req.json()
 
