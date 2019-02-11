@@ -212,10 +212,8 @@ The properties object has the following fields:
     as an annotation to another resource class.
   - _seqnum_: An integer that is used to define a sequence number in an ordered set of
     instances.
-  
 - _object_: The "object" defines the type of the value that the property will store.
   The following object types are allowed:
-  
   - _TextValue_: Represents a text that may contain standoff markup
   - _ColorValue_: A string in the form "#rrggbb" (standard web color format)
   - _DateValue_: represents a date. It is a string having the format "_calendar":"start":"end"
@@ -223,7 +221,6 @@ The properties object has the following fields:
     - _start_ has the form _yyyy_-_mm_-_dd_. If only the year is given, the precision
       is to the year, of only the year and month are given, the precision is to a month.
     - _end_ is optional if the date represents a clearely defined period or uncertainty.
-    
     In total, a DateValue has the following form: "GREGORIAN:1925:1927-03-22"
     which means antime in between 1925 and the 22nd March 1927.
   - _DecimalValue_: a number with decimal point
@@ -235,28 +232,27 @@ The properties object has the following fields:
   - _IntervalValue_: Represents a time-interval
   - _ListValue_: Represents a node of a (possibly hierarchical) list
 - _labels_: Language dependent, human readable names
-- _gui_element_: The gui_element is stricly seen not part of the data. It gives the
+- _gui_element_: The gui_element is – strictly seen – not part of the data. It gives the
   generic GUI a hint about how the property should be presented to the used. Each gui_element
   may have associated gui_attributes which contain further hints.
   There are the following gui_elements available:
-  - _Colorpicker_: Let's You pick a color. It requires the attribute "ncolors=integer"
-  - _Date_: A date picker gui. No attributes
+  - _Colorpicker_: The only GUI element for _ColorValue_. Let's You pick a color. It requires the attribute "ncolors=integer"
+  - _Date_: The only GUI element for _DateValue_. A date picker gui. No attributes
   - _Geometry_: Not Yet Implemented.
-  - _Geonames_: Interfaces with geonames.org and allows to select a location
+  - _Geonames_: The only GUI element for _GeonameValue_. Interfaces with geonames.org and allows to select a location
   - _Interval_: Not Yet Implemented.
   - _List_: A list of values. The Attribute "hlist=<list-iri>" is mandatory!
-  - _Pulldown_: Pulldown for list values. Works also for hierarchical lists. The Attribute "hlist=<list-iri>" is mandatory!
-  - _Radio_: A set of radio buttons. The Attribute "hlist=<list-iri>" is mandatory!
-  - _Richtext_: Provides a richtext editor.
-  - _Searchbox_: Allows to search and enter a resource that the given resource should link to. The Attribute "numprops=integer"
+  - _Pulldown_: A GUI element for _ListValue_. Pulldown for list values. Works also for hierarchical lists. The Attribute "hlist=<list-iri>" is mandatory!
+  - _Radio_: A GUI element for _ListValue_. A set of radio buttons. The Attribute "hlist=<list-iri>" is mandatory!
+  - _SimpleText_: A GUI element for _TextValue_. A simple text entry box (one line only). The attributes "maxlength=integer" and "size=integer" are optional.
+  - _Textarea_: A GUI element for _TextValue_. Presents a multiline textentry box. Optional attributes are "cols=integer",  "rows=integer", "width=percent" and "wrap=soft|hard".
+  - _Richtext_: A GUI element for _TextValue_. Provides a richtext editor.
+  - _Searchbox_: Must be used with _hasLinkTo_ properties. Allows to search and enter a resource that the given resource should link to. The Attribute "numprops=integer"
      indicates how many properties of the found resources should be indicated. It's mandatory!
-  - _SimpleText_: A simple text entry box (one line only). The attributes "maxlength=integer" and "size=integer" are optional.
-  - _Slider_: Provides a slider to select a decimal value. The attributes "max=decimal" and "min=decimal" are mandatory!
-  - _Spinbox_: A text field with and "up"- and "down"-button for increment/decrement. The attributes "max=decimal" and "min=decimal" are optional.
-  - _Textarea_: Presents a multiline textentry box. Optional attributes are "cols=integer",  "rows=integer", "width=percent" and "wrap=soft|hard".
-  - :Checkbox
-  - :Fileupload
-
+  - _Slider_: A GUI element for _DecimalValue_. Provides a slider to select a decimal value. The attributes "max=decimal" and "min=decimal" are mandatory!
+  - _Spinbox_: A GUI element for _IntegerValue_. A text field with and "up"- and "down"-button for increment/decrement. The attributes "max=decimal" and "min=decimal" are optional.
+  - _Checkbox_: A GUI element for _BooleanValue_. 
+  - _Fileupload_: not yet documented!
 - _gui_attributes_: See above
 - _cardinality_: The cardinality indicates how often a given property may occur. The possible values
   are:
