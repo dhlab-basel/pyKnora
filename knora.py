@@ -888,6 +888,7 @@ class knora:
                 if attr is not None:
                     propcnt -= 1
                     resources[resclass][propcnt]["attr"][attr[0]] = attr[1].strip('<>')
+                    propcnt += 1
                 continue
             else:
                 propname = npropname
