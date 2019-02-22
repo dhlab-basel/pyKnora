@@ -100,7 +100,7 @@ class knora:
         self.prefixes = prefixes
 
         credentials = {
-            "identifier": user,
+            "email": user,
             "password": password
         }
         jsondata = json.dumps(credentials)
@@ -161,7 +161,7 @@ class knora:
         :return: JSON containing the project information
         """
 
-        url = self.server + '/admin/projects/' + quote_plus("http://rdfh.ch/projects/" + shortcode)
+        url = self.server + '/admin/projects/shortcode/' + quote_plus(shortcode)
         req = requests.get(url, headers={'Authorization': 'Bearer ' + self.token})
         self.on_api_error(req)
 
@@ -966,6 +966,14 @@ class BulkImport:
         f.close()
 
     def add_resource(self, resclass: str, id: str, label: str, properties: Dict):
+        """
+
+        :param resclass:
+        :param id:
+        :param label:
+        :param properties:
+        :return:
+        """
 
         def find_list_node_id(nodename: str, nodes: List):
             """

@@ -112,7 +112,9 @@ with open(args.tabfile) as tsv:
                     ttmp2[2] = '19' + ttmp2[2]
                 inBetrieb = inBetrieb + ':' + ttmp2[2] + '-' + ttmp2[1] + '-' + ttmp2[0]
             print(inBetrieb)
-            bulk.add_resource('lager', 'LAGER_' + str(lager_id), label, {
+            bulk.add_resource(
+                'lager',
+                'LAGER_' + str(lager_id), label, {
                 "lagername": lagername,
                 "inKreis": inKreis,
                 "inBetrieb": inBetrieb})
