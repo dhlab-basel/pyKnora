@@ -89,7 +89,7 @@ class knora:
     This is the main class which holds all the methods for communication with the Knora backend.
     """
 
-    def __init__(self, server: str, user: str, password: str, prefixes: Dict[str,str] = None):
+    def __init__(self, server: str, email: str, password: str, prefixes: Dict[str,str] = None):
         """
         Constructor requiring the server address, the user and password of KNORA
         :param server: Adress of the server, e.g http://data.dasch.swiss
@@ -100,7 +100,7 @@ class knora:
         self.prefixes = prefixes
 
         credentials = {
-            "identifier": user,
+            "email": email,
             "password": password
         }
         jsondata = json.dumps(credentials)
@@ -146,7 +146,7 @@ class knora:
         self.on_api_error(req)
         result = req.json()
 
-        if  'projects' not in result:
+        if 'projects' not in result:
             raise KnoraError("KNORA-ERROR:\n Request got no projects!")
         else:
             if full:
@@ -161,7 +161,7 @@ class knora:
         :return: JSON containing the project information
         """
 
-        url = self.server + '/admin/projects/' + quote_plus("http://rdfh.ch/projects/" + shortcode)
+        url = self.server + '/admin/projects/shortcode/' + shortcode
         req = requests.get(url, headers={'Authorization': 'Bearer ' + self.token})
         self.on_api_error(req)
 
@@ -244,7 +244,6 @@ class knora:
         descriptions = list(map(lambda p: {"language": p[0], "value": p[1]}, descriptions.items()))
 
         project = {
-            "shortcode": shortcode,
             "longname": longname,
             "description": descriptions,
             "keywords": keywords,
@@ -254,7 +253,7 @@ class knora:
         }
 
         jsondata = json.dumps(project)
-        url = self.server + '/admin/projects/' + quote_plus("http://rdfh.ch/projects/" + shortcode)
+        url = self.server + '/admin/projects/iri/' + quote_plus("http://rdfh.ch/projects/" + shortcode)
 
         req = requests.put(url,
                            headers={'Content-Type': 'application/json; charset=UTF-8',
@@ -335,7 +334,10 @@ class knora:
         return res['user']['id']
 
     def add_user_to_project(self, user_iri: str, project_iri: str):
-        url = self.server + '/admin/users/projects/' + quote_plus(user_iri) + '/' + quote_plus(project_iri)
+        print("USER: " + user_iri)
+        print("PROJECT: " + project_iri)
+        url = self.server + '/admin/users/iri/' + quote_plus(user_iri) + '/project-memberships/' + quote_plus(project_iri)
+        print(url)
         req = requests.post(url, headers={'Authorization': 'Bearer ' + self.token})
         self.on_api_error(req)
         return None
@@ -887,7 +889,8 @@ class knora:
             if propname == npropname:
                 if attr is not None:
                     propcnt -= 1
-                    resources[resclass][propcnt]["attr"][attr[0]] = attr[1].strip('<>')
+                    if resources[resclass][propcnt]["attr"] is not None: # TODO: why is this necessary???
+                        resources[resclass][propcnt]["attr"][attr[0]] = attr[1].strip('<>')
                 continue
             else:
                 propname = npropname

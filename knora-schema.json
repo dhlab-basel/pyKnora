@@ -231,7 +231,7 @@
           "$ref": "#/definitions/comment"
         }
       },
-      "required": ["name", "super", "object", "labels", "gui_element"],
+      "required": ["name", "object", "labels", "gui_element"],
       "additionalProperties": false
     }
   },

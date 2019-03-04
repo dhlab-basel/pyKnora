@@ -7,11 +7,31 @@
     "shortcode": "0809",
     "shortname": "MLS",
     "longname": "Musikalisches Lexikon der Schweiz",
-    "description": {
+    "descriptions": {
       "de": "Musikalisches Lexikon der Schweiz"
     },
     "keywords": ["Musik", "Musikwissenschaft"],
     "lists": [
+      {
+        "name": "sex",
+        "labels": {
+          "de": "Geschlecht"
+        },
+        "nodes": [
+          {
+            "name": "male",
+            "labels": {
+              "de": "männlich"
+            }
+          },
+          {
+            "name": "female",
+            "labels": {
+              "de": "weiblich"
+            }
+          }
+        ]
+      },
       {
         "name": "persfunctions",
         "labels": {
@@ -1461,9 +1481,9 @@
         },
         "nodes": [
           {
-            "name": person,
+            "name": "person",
             "labels": {
-              "de": Person
+              "de": "Person"
             }
           },
           {
@@ -1506,9 +1526,7 @@
           "properties": [
             {
               "name": "shortname",
-              "super": ["hasValue"],
               "object": "TextValue",
-              "subject": "mls:lexicon",
               "labels": {
                 "de": "Kürzel"
               },
@@ -1518,9 +1536,7 @@
             },
             {
               "name": "citationform",
-              "super": ["hasValue"],
               "object": "TextValue",
-              "subject": "mls:lexicon",
               "labels": {
                 "de": "Zitierform"
               },
@@ -1529,12 +1545,20 @@
               "cardinality": "1"
             },
             {
-              "name": "weblink",
-              "super": ["hasValue"],
-              "object": "UriValue",
-              "subject": "mls:lexicon",
+              "name": "lexiconcomment",
+              "object": "TextValue",
               "labels": {
-                "de": "Web-Link"
+                "de": "Kommentar"
+              },
+              "gui_element": "Textarea",
+              "gui_attributes": ["width=99%", "rows=2"],
+              "cardinality": "0-n"
+            },
+            {
+              "name": "lexiconweblink",
+              "object": "UriValue",
+              "labels": {
+                "de": "Link KVK"
               },
               "gui_element": "SimpleText",
               "gui_attributes": ["size=64", "maxlength=128"],
@@ -1544,24 +1568,11 @@
               "name": "inLibrary",
               "super": ["hasLinkTo"],
               "object": "mls:library",
-              "subject": "mls:lexicon",
               "labels": {
                 "de": "in Bibliothek"
               },
               "gui_element": "Searchbox",
               "gui_attributes": ["numprops=1"],
-              "cardinality": "0-n"
-            },
-            {
-              "name": "lexcomment",
-              "super": ["hasValue"],
-              "object": "TextValue",
-              "subject": "mls:lexicon",
-              "labels": {
-                "de": "Kommentar"
-              },
-              "gui_element": "textarea",
-              "gui_attributes": ["width=99%", "nrows=2"],
               "cardinality": "0-n"
             }
           ]
@@ -1574,10 +1585,8 @@
           },
           "properties": [
             {
-              "name": "lemma",
-              "super": ["hasValue"],
+              "name": "Lemmaval",
               "object": "TextValue",
-              "subject": "mls:lemma",
               "labels": {
                 "de": "Lemma"
               },
@@ -1586,10 +1595,8 @@
               "cardinality": "1"
             },
             {
-              "name": "deceased",
-              "super": ["hasValue"],
+              "name": "isDeceased",
               "object": "BooleanValue",
-              "subject": "mls:lemma",
               "labels": {
                 "de": "verstorben"
               },
@@ -1598,10 +1605,29 @@
               "cardinality": "0-1"
             },
             {
+              "name": "isRelevant",
+              "object": "BooleanValue",
+              "labels": {
+                "de": "relevant"
+              },
+              "gui_element": "Checkbox",
+              "gui_attributes": [],
+              "cardinality": "0-1"
+
+            },
+            {
+              "name": "lemmadescription",
+              "object": "TextValue",
+              "labels": {
+                "de": "Beschreibung"
+              },
+              "gui_element": "Textarea",
+              "gui_attributes": ["width=99%", "rows=2"],
+              "cardinality": "0-1"
+            },
+            {
               "name": "lemmatype",
-              "super": ["hasValue"],
               "object": "ListValue",
-              "subject": "mls:lemma",
               "labels": {
                 "de": "Lemmatyp"
               },
@@ -1610,22 +1636,28 @@
               "cardinality": "1"
             },
             {
+              "name": "hasSex",
+              "object": "ListValue",
+              "labels": {
+                "de": "Geschlecht"
+              },
+              "gui_element": "Pulldown",
+              "gui_attributes": ["hlist=sex"],
+              "cardinality": "0-1"
+            },
+            {
               "name": "lemmacomment",
-              "super": ["hasValue"],
               "object": "TextValue",
-              "subject": "mls:lemma",
               "labels": {
                 "de": "Kommentar"
               },
               "gui_element": "Textarea",
-              "gui_attributes": ["width=99%", "nrows=2"],
+              "gui_attributes": ["width=99%", "rows=2"],
               "cardinality": "0-n"
             },
             {
               "name": "startdate",
-              "super": ["hasValue"],
               "object": "DateValue",
-              "subject": "mls:lemma",
               "labels": {
                 "de": "Anfangsdatum"
               },
@@ -1635,9 +1667,7 @@
             },
             {
               "name": "startinfo",
-              "super": ["hasValue"],
               "object": "TextValue",
-              "subject": "mls:lemma",
               "labels": {
                 "de": "Anfangsinfo"
               },
@@ -1647,9 +1677,7 @@
             },
                         {
               "name": "enddate",
-              "super": ["hasValue"],
               "object": "DateValue",
-              "subject": "mls:lemma",
               "labels": {
                 "de": "Enddatum"
               },
@@ -1659,9 +1687,7 @@
             },
             {
               "name": "endinfo",
-              "super": ["hasValue"],
               "object": "TextValue",
-              "subject": "mls:lemma",
               "labels": {
                 "de": "Endinfo"
               },
@@ -1671,9 +1697,7 @@
             },
             {
               "name": "gnd",
-              "super": ["hasValue"],
               "object": "TextValue",
-              "subject": "mls:lemma",
               "labels": {
                 "de": "GND"
               },
@@ -1683,9 +1707,7 @@
             },
             {
               "name": "viaf",
-              "super": ["hasValue"],
               "object": "TextValue",
-              "subject": "mls:lemma",
               "labels": {
                 "de": "VIAF"
               },
@@ -1697,7 +1719,6 @@
               "name": "firstname",
               "super": ["hasValue", "foaf:givenName"],
               "object": "TextValue",
-              "subject": "mls:lemma",
               "labels": {
                 "de": "Vorname"
               },
@@ -1707,9 +1728,7 @@
             },
             {
               "name": "variants",
-              "super": ["hasValue"],
               "object": "TextValue",
-              "subject": "mls:lemma",
               "labels": {
                 "de": "Varianten"
               },
@@ -1719,33 +1738,27 @@
             },
             {
               "name": "birthlocation",
-              "super": ["hasValue"],
               "object": "GeonameValue",
-              "subject": "mls:lemma",
               "labels": {
                 "de": "Ort Geburt"
               },
-              "gui_element": "geonames",
+              "gui_element": "Geonames",
               "gui_attributes": [],
               "cardinality": "0-1"
             },
             {
               "name": "worklocation",
-              "super": ["hasValue"],
               "object": "GeonameValue",
-              "subject": "mls:lemma",
               "labels": {
                 "de": "Ort Tätigkeit"
               },
-              "gui_element": "geonames",
+              "gui_element": "Geonames",
               "gui_attributes": [],
               "cardinality": "0-1"
             },
             {
               "name": "dyinglocation",
-              "super": ["hasValue"],
               "object": "GeonameValue",
-              "subject": "mls:lemma",
               "labels": {
                 "de": "Ort Tod"
               },
@@ -1757,7 +1770,6 @@
               "name": "sublemma",
               "super": ["hasLinkTo"],
               "object": "mls:lemma",
-              "subject": "mls:lemma",
               "labels": {
                 "de": "Untergeordnetes Lemma"
               },
@@ -1776,9 +1788,7 @@
           "properties": [
             {
               "name": "sigle",
-              "super": ["hasValue"],
               "object": "TextValue",
-              "subject": "mls:library",
               "labels": {
                 "de": "Sigle"
               },
@@ -1788,21 +1798,17 @@
             },
             {
               "name": "location",
-              "super": ["hasValue"],
               "object": "GeonameValue",
-              "subject": "mls:library",
               "labels": {
                 "de": "Ort"
               },
               "gui_element": "Geonames",
               "gui_attributes": [],
-              "cardinality": "1"
+              "cardinality": "0-1"
             },
             {
-              "name": "description",
-              "super": ["hasValue"],
+              "name": "librarydescription",
               "object": "TextValue",
-              "subject": "mls:library",
               "labels": {
                 "de": "Beschreibung"
               },
@@ -1811,10 +1817,8 @@
               "cardinality": "0-1"
             },
             {
-              "name": "weblink",
-              "super": ["hasValue"],
+              "name": "libraryweblink",
               "object": "UriValue",
-              "subject": "mls:library",
               "labels": {
                 "de": "Web-Link"
               },
@@ -1824,9 +1828,7 @@
             },
             {
               "name": "catalogue",
-              "super": ["hasValue"],
               "object": "UriValue",
-              "subject": "mls:library",
               "labels": {
                 "de": "Katalog"
               },
@@ -1836,26 +1838,22 @@
             },
             {
               "name": "address",
-              "super": ["hasValue"],
               "object": "TextValue",
-              "subject": "mls:library",
               "labels": {
                 "de": "Adresse/Kontakt"
               },
               "gui_element": "Textarea",
-              "gui_attributes": ["width=99%", "nrows=3"],
+              "gui_attributes": ["width=99%", "rows=3"],
               "cardinality": "0-1"
             },
             {
-              "name": "lexcomment",
-              "super": ["hasValue"],
+              "name": "librarycomment",
               "object": "TextValue",
-              "subject": "mls:library",
               "labels": {
                 "de": "Kommentar"
               },
-              "gui_element": "textarea",
-              "gui_attributes": ["width=99%", "nrows=2"],
+              "gui_element": "Textarea",
+              "gui_attributes": ["width=99%", "rows=2"],
               "cardinality": "0-n"
             }
           ]
@@ -1869,9 +1867,7 @@
           "properties": [
             {
               "name": "articletype",
-              "super": ["hasValue"],
               "object": "ListValue",
-              "subject": "mls:article",
               "labels": {
                 "de": "Artikeltyp"
               },
@@ -1883,7 +1879,6 @@
               "name":"hasLemma",
               "super": ["hasLinkTo"],
               "object": "mls:lemma",
-              "subject": "mls:article",
               "labels": {
                 "de": "Lemma"
               },
@@ -1893,21 +1888,18 @@
             },
             {
               "name": "origspelling",
-              "super": ["hasValue"],
               "object": "TextValue",
-              "subject": "mls:article",
               "labels": {
                 "de": "Originalschreibung"
               },
               "gui_element": "SimpleText",
-              "gui_attributes": ["maxlength=128", "size=64"],
+              "gui_attributes": ["size=64", "maxlength=128"],
               "cardinality": "0-1"
             },
             {
               "name":"hasLexicon",
               "super": ["hasLinkTo"],
               "object": "mls:lexicon",
-              "subject": "mls:article",
               "labels": {
                 "de": "in Lexikon"
               },
@@ -1917,21 +1909,17 @@
             },
             {
               "name": "pages",
-              "super": ["hasValue"],
               "object": "TextValue",
-              "subject": "mls:article",
               "labels": {
                 "de": "Seite"
               },
               "gui_element": "SimpleText",
-              "gui_attributes": ["maxlength=16", "size=16"],
+              "gui_attributes": ["size=16", "maxlength=16"],
               "cardinality": "0-1"
             },
             {
               "name": "articletext",
-              "super": ["hasValue"],
               "object": "TextValue",
-              "subject": "mls:article",
               "labels": {
                 "de": "Artikel"
               },
@@ -1941,141 +1929,118 @@
             },
             {
               "name": "numlines",
-              "super": ["hasValue"],
               "object": "IntValue",
-              "subject": "mls:article",
               "labels": {
                 "de": "Zeilen"
               },
               "gui_element": "SimpleText",
-              "gui_attributes": ["maxlength=6", "size=6"],
+              "gui_attributes": ["size=6", "maxlength=6"],
               "cardinality": "0-1"
             },
             {
               "name": "articlecomment",
-              "super": ["hasValue"],
               "object": "TextValue",
-              "subject": "mls:library",
               "labels": {
                 "de": "Kommentar"
               },
-              "gui_element": "textarea",
-              "gui_attributes": ["width=99%", "nrows=2"],
+              "gui_element": "Textarea",
+              "gui_attributes": ["width=99%", "rows=2"],
               "cardinality": "0-n"
             },
             {
               "name": "state",
-              "super": ["hasValue"],
               "object": "TextValue",
-              "subject": "mls:article",
               "labels": {
                 "de": "Zustand"
               },
               "gui_element": "SimpleText",
-              "gui_attributes": ["maxlength=32", "size=32"],
+              "gui_attributes": ["size=32","maxlength=32"],
               "cardinality": "0-1"
             },
             {
               "name": "internallex",
-              "super": ["hasValue"],
               "object": "TextValue",
-              "subject": "mls:article",
               "labels": {
                 "de": "Interne Lexicographische Information"
               },
               "gui_element": "SimpleText",
-              "gui_attributes": ["maxlength=128", "size=128"],
+              "gui_attributes": ["size=128", "maxlength=128"],
               "cardinality": "0-1"
             },
             {
               "name": "link",
-              "super": ["hasValue"],
               "object": "UriValue",
-              "subject": "mls:article",
               "labels": {
                 "de": "Link"
               },
               "gui_element": "SimpleText",
-              "gui_attributes": ["maxlength=128", "size=128"],
+              "gui_attributes": ["size=128", "maxlength=128"],
               "cardinality": "0-1"
             },
             {
               "name": "shortinfo",
-              "super": ["hasValue"],
               "object": "TextValue",
-              "subject": "mls:library",
               "labels": {
                 "de": "Kurzinformation"
               },
-              "gui_element": "textarea",
-              "gui_attributes": ["width=99%", "nrows=2"],
+              "gui_element": "Textarea",
+              "gui_attributes": ["width=99%", "rows=2"],
               "cardinality": "0-1"
             },
             {
               "name": "theatrelexcode",
-              "super": ["hasValue"],
               "object": "TextValue",
-              "subject": "mls:article",
               "labels": {
                 "de": "Theaterlexikon Code"
               },
               "gui_element": "SimpleText",
-              "gui_attributes": ["maxlength=128", "size=32"],
+              "gui_attributes": ["size=32", "maxlength=128"],
               "cardinality": "0-1"
             },
             {
               "name": "ticinolexcode",
-              "super": ["hasValue"],
               "object": "TextValue",
-              "subject": "mls:article",
               "labels": {
                 "de": "Link Dizionario Ticinese"
               },
               "gui_element": "SimpleText",
-              "gui_attributes": ["maxlength=128", "size=32"],
+              "gui_attributes": ["size=32", "maxlength=128"],
               "cardinality": "0-1"
             },
             {
               "name": "fonotecacode",
-              "super": ["hasValue"],
               "object": "TextValue",
-              "subject": "mls:article",
               "labels": {
                 "de": "Fonoteca Code"
               },
               "gui_element": "SimpleText",
-              "gui_attributes": ["maxlength=128", "size=32"],
+              "gui_attributes": ["size=32", "maxlength=128"],
               "cardinality": "0-1"
             },
             {
               "name": "hlscode",
-              "super": ["hasValue"],
               "object": "TextValue",
-              "subject": "mls:article",
               "labels": {
                 "de": "HLS Code"
               },
               "gui_element": "SimpleText",
-              "gui_attributes": ["maxlength=128", "size=32"],
+              "gui_attributes": ["size=32", "maxlength=128"],
               "cardinality": "0-1"
             },
             {
               "name": "oemlcode",
-              "super": ["hasValue"],
               "object": "TextValue",
-              "subject": "mls:article",
               "labels": {
                 "de": "OEML Code"
               },
               "gui_element": "SimpleText",
-              "gui_attributes": ["maxlength=128", "size=32"],
+              "gui_attributes": ["size=32", "maxlength=128"],
               "cardinality": "0-1"
             },
             {
               "name": "subarticle",
               "super": ["hasLinkTo"],
               "object": "mls:article",
-              "subject": "mls:article",
               "labels": {
                 "de": "Untergeordneter Artikel"
               },

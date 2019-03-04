@@ -179,11 +179,22 @@ for resource in ontology["project"]["ontology"]["resources"]:
                 else:
                     new_guiattrs.append(guiattr)
             guiattrs = new_guiattrs
+
+        if prop.get("super") is not None:
             super_props = list(map(lambda a: a if ':' in a else "knora-api:" + a, prop["super"]))
+        else:
+            super_props = ["knora-api:hasValue"]
+
         if prop.get("object") is not None:
             object = prop["object"] if ':' in prop["object"] else "knora-api:" + prop["object"]
         else:
             object = None
+
+        if prop.get("subject") is not None:
+            psubject = prop["subject"]
+        else:
+            psubject = ontology["project"]["ontology"]["name"] + ':' + resource["name"]
+
         result = con.create_property(
             onto_iri=onto_iri,
             onto_name=ontology["project"]["ontology"]["name"],
@@ -193,7 +204,7 @@ for resource in ontology["project"]["ontology"]["resources"]:
             labels=prop["labels"],
             gui_element="salsah-gui:" + prop["gui_element"],
             gui_attributes=guiattrs,
-            subject=prop.get("subject"),
+            subject=psubject,
             object=object,
             comments=prop.get("comments")
         )
@@ -214,5 +225,7 @@ for resource in ontology["project"]["ontology"]["resources"]:
             occurrence=prop["cardinality"]
         )
         last_onto_date = result["last_onto_date"]
+
+con = None  # force logout by deleting the connection object.
 
 
