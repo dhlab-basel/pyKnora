@@ -968,6 +968,14 @@ class BulkImport:
         f.close()
 
     def add_resource(self, resclass: str, id: str, label: str, properties: Dict):
+        """
+
+        :param resclass:
+        :param id:
+        :param label:
+        :param properties:
+        :return:
+        """
 
         def find_list_node_id(nodename: str, nodes: List):
             """
