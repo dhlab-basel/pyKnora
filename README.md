@@ -1,3 +1,5 @@
+Project moved to [dhlab-basel/knora-py](https://github.com/dhlab-basel/knora-py)
+
 # pyKnora
 PyKnora is a toolbox to create data models (ontologies) and for mass upload of data
 into the Knora framework. 
